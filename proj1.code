@@ -1,0 +1,242 @@
+<define TOKEN (("=""=") ("<""=") (">""=") ("!""=") ("&""&") ("|""|"))/>
+<define KEYWORDS ("int" "float" "if" "else" "while")/>
+<define BACKTRACK FALSE/>
+
+<define PARSE CODE.Start/> <<* start non-terminal
+
+<code Base/>
+<code Base2/>
+<code Stmt_list/>
+<code Stmt_list2/>
+<code Stmt/>
+<code Conditional_stmt/>
+<code Else_stmt/>
+<code While_stmt/>
+<code Compound_stmt/>
+<code Decl_list/>
+<code Decl_list2/>
+<code Decl/>
+<code Type_spec/>
+<code Iden_list/>
+<code Iden/>
+<code Iden2/>
+<code Array_ind/>
+<code Exp/>
+<code Exp2/>
+<code Assign_exp/>
+<code Assign_exp2/>
+<code Logic_OR_exp/>
+<code Logic_OR_exp2/>
+<code Logic_AND_exp/>
+<code Logic_AND_exp2/>
+<code Equal_exp/>
+<code Equal_exp2/>
+<code Relation_exp/>
+<code Rel_exp_lt/>
+<code Rel_exp_gt/>
+<code Rel_exp_lte/>
+<code Rel_exp_gte/>
+<code Add_exp/>
+<code Add_exp_plus/>
+<code Add_exp_minus/>
+<code Mult_exp/>
+<code Mult_exp_mul/>
+<code Mult_exp_div/>
+<code Unary_exp/>
+<code Unary_exp2/>
+<code Unary_op/>
+<code Primary_exp/>
+<code Paren_exp/>
+<code Num/>
+<code Value/>
+<code ICONST/>
+<code FCONST/>
+
+<code Comment pars=(content:(~"*/")...) >
+/*@content@*/
+</code>
+
+<code Start pars=(content: Base)>
+@content@
+</code>
+
+<code Base pars=(content: Base2 | Decl_list | Stmt_list | "")>
+@content@
+</code>
+
+<code Base2 pars=(dc: Decl_list, st: Stmt_list)>
+@dc@ @st@
+</code>
+
+<code Stmt_list pars=(st: Stmt, sl: Stmt_list2)>
+@st@@sl@
+</code>
+
+<code Stmt_list2 pars=(sl: Stmt_list | "")>
+@sl@
+</code>
+
+<code Stmt pars=(stype: (Exp ";") | Conditional_stmt | While_stmt | Compound_stmt)>
+@stype@
+</code>
+
+<code Conditional_stmt pars=(exp: Exp, st: Stmt, els: Else_stmt)>
+if (@exp@) @st@ @els@
+</code>
+
+<code Else_stmt pars=(st: ("else" Stmt) | "")>
+@st@
+</code>
+
+<code While_stmt pars=(exp: Exp, st: Stmt)>
+while (@exp@) @st@
+</code>
+
+<code Compound_stmt pars=(body: Base)>
+{ @body@ }
+</code>
+
+<code Decl_list parse=LIST(Decl, ";")/>
+
+<code Decl pars=(type: Type_spec, iden: Iden_list)>
+@type@ @iden@
+</code>
+
+<code Type_spec pars=(type: "int" | "float")>
+@type@
+</code>
+
+<code Iden_list parse=LIST(Iden, ",")/>
+
+<code Iden pars=(id: Iden2 | ID)>
+@id@
+</code>
+
+<code Iden2 pars=(id: ID, ai: (Array_ind | ""))>
+@id@@ai@
+</code>
+
+<code Array_ind pars=(ind: Value, ai: Array_ind | "")>
+[@ind@]@ai@
+</code>
+
+<code Exp pars=(ex: Assign_exp, ex2: Exp2)>
+@ex@@ex2@
+</code>
+
+<code Exp2 pars=(ex: ("," Exp) | "")>
+@ex@
+</code>
+
+<code Assign_exp pars=(ex: Logic_OR_exp, ex2: Assign_exp2 )>
+@ex@@ex2@
+</code>
+
+<code Assign_exp2 pars=(ex: ("=" Assign_exp) | "")>
+@ex@
+</code>
+
+<code Logic_OR_exp pars=(l1: Logic_AND_exp, l2: Logic_OR_exp2)>
+@l1@@l2@
+</code>
+
+<code Logic_OR_exp2 pars=(log: ("||" Logic_OR_exp) | "")>
+@log@
+</code>
+
+<code Logic_AND_exp pars=(exp: Equal_exp, exp2: Logic_AND_exp2)>
+@exp@@exp2@
+</code>
+
+<code Logic_AND_exp2 pars=(exp: ("&&" Logic_AND_exp) | "")>
+@exp@
+</code>
+
+<code Equal_exp pars=(exp: Relation_exp, exp2: Equal_exp2)>
+@exp@@exp2@
+</code>
+
+<code Equal_exp2 pars=(exp: ("==" Equal_exp) | ("!=" Equal_exp) | "")>
+@exp@
+</code>
+
+<code Relation_exp pars=(add: Add_exp, rel: Rel_exp_lt)>
+@add@@rel@
+</code>
+
+<code Rel_exp_lt pars=(add: ("<" Relation_exp) | Rel_exp_gt)>
+@add@
+</code>
+
+<code Rel_exp_gt pars=(add: (">" Relation_exp) | Rel_exp_lte)>
+@add@
+</code>
+
+<code Rel_exp_lte pars=(add: ("<=" Relation_exp) | Rel_exp_gte)>
+@add@
+</code>
+
+<code Rel_exp_gte pars=(add: (">=" Relation_exp) | "")>
+@add@
+</code>
+
+<code Add_exp pars=(mul: Mult_exp, add: Add_exp_plus)>
+@mul@@add@
+</code>
+
+<code Add_exp_plus pars=(mul: ("+" Add_exp) | Add_exp_minus)>
+@mul@
+</code>
+
+<code Add_exp_minus pars=(mul: ("-" Add_exp) | "")>
+@mul@
+</code>
+
+<code Mult_exp pars=(exp: Unary_exp, mul: Mult_exp_mul)>
+@exp@@mul@
+</code>
+
+<code Mult_exp_mul pars=(exp: ("*" Mult_exp) | Mult_exp_div)>
+@exp@
+</code>
+
+<code Mult_exp_div pars=(exp:("/" Mult_exp) | "")>
+@exp@
+</code>
+
+<code Unary_exp pars=(exp: Unary_exp2 | Primary_exp)>
+@exp@
+</code>
+
+<code Unary_exp2 pars=(op: Unary_op, exp: Primary_exp)>
+@op@@exp@
+</code>
+
+<code Unary_op pars=(op: "!")>
+@op@
+</code>
+
+<code Primary_exp pars=(exp: Value | Paren_exp)>
+@exp@
+</code>
+
+<code Paren_exp pars=(exp: Exp)>
+(@exp@)
+</code>
+
+<code Value pars=(v: Num | Iden)>
+@v@
+</code>
+
+<code Num pars=(v1: ICONST, v2: FCONST)>
+@v1@@v2@
+</code>
+
+<code FCONST pars=(v: ("." INT) | "")>
+@v@
+</code>
+
+<code ICONST pars=(v: INT | ("-" INT))>
+@v@
+</code>
+
