@@ -1,14 +1,15 @@
-%union {
-	float fval;
-	int ival;
-}
 
-%token COMMENT IF ELSE WHILE ID ICONST FCONST INT FLOAT
-%token LPAREN RPAREN LBRACE RBRACE ASSIGN SEMICOLON COMMA LBRACKET RBRACKET
-%left NE LE GE LT GT EQ AND OR
-%left PLUS MINUS
-%left MULT DIV
-%right UMINUS NOT UPLUS
+
+%token <astNode> COMMENT IF ELSE WHILE ID INT FLOAT
+%token <ival> ICONST
+%token <fval> FCONST
+%token <astNode> LPAREN RPAREN LBRACE RBRACE ASSIGN SEMICOLON COMMA LBRACKET RBRACKET
+%left <astNode> NE LE GE LT GT EQ AND OR
+%left <astNode> PLUS MINUS
+%left <astNode> MULT DIV
+%right <astNode> UMINUS NOT UPLUS
+
+%type <astNode> expr
 
 
 %{
@@ -40,10 +41,16 @@ typedef struct {
 //varTable.pairs = (NameTypePair**)calloc(sizeof(NameTypePair*)*10, 0);
 //varTable.maxsize = 10;
 
-
+ASTnode* create_AST_LITERAL_INT(int);
+ASTnode* create_AST_LITERAL_FLOAT(float);
 
 %}
 
+%union {
+    float fval;
+    int ival;
+    ASTnode* astNode;
+}
 
 %%
 start:stmt
@@ -89,8 +96,8 @@ expr:expr PLUS expr
     |LPAREN expr RPAREN
     |MINUS expr %prec UMINUS
     |PLUS expr %prec UPLUS
-    |ICONST 											
-    |FCONST
+    |ICONST 		{printf("ICONST:%d\n", $1); $$ = create_AST_LITERAL_INT($1);}									
+    |FCONST         {printf("FCONST:%f\n", $1); $$ = create_AST_LITERAL_FLOAT($1);}   
     |idstmt
     ;
 idstmt:ID
@@ -143,8 +150,12 @@ void doubleChildrenAllocation(ASTnode* node){
     node->maxChildren *= 2;
 }
 
-ASTnode* create_AST_LITERAL(){
-	
+ASTnode* create_AST_LITERAL_INT(int value){
+	return calloc(sizeof(ASTnode), 0);
+}
+
+ASTnode* create_AST_LITERAL_FLOAT(float value){
+    return calloc(sizeof(ASTnode), 0);
 }
 
 ASTnode* create_AST_IFELSE(){
