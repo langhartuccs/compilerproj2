@@ -38,6 +38,7 @@ typedef struct astnodestruct {
     int maxChildren;
     int numChildren;
     int ival;
+    char* varName;
     float fval;
     struct astnodestruct** children;
 } ASTnode;
@@ -134,13 +135,24 @@ array:LBRACKET ICONST RBRACKET
 VARtable varTable;
 
 ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
+    int i;
     printf("registerVars()\n");
     ASTnode* output = calloc(1, sizeof(ASTnode));
     output->nodeType = AST_VAR_DECL;
-    //TODO
-    //Cycle through vars and register them
+    for(i = 0; i < vars->numChildren; i++){
+
+        ASTnode* child = vars->children[i];
+        if(child->varName == NULL)
+            printf("varName is NULL\n");
+        if(lookupVar(child->varName) != NULL){
+            printf("Variable already registered!");
+            //TODO throw error
+        }
+        child->varPair = registerVar(child->varName, vartype);
+        child->varType = vartype;
+    }
     output->varType = vartype;
-    //output.varPair = registerVar();
+    printf("Registered vars\n");
     return output;
 }
 
@@ -218,10 +230,10 @@ ASTnode* create_AST_LITERAL_FLOAT(float value){
 ASTnode* create_AST_VAR_REF(char* var){
     ASTnode* output = calloc(1, sizeof(ASTnode));
     output->nodeType = AST_VAR_REF;
-    if(lookupVar(var) == NULL)
+    NameTypePair* pair = lookupVar(var);
+    if(pair == NULL)
         printf("Var %s not registered\n", var);
-    //TODO
-    //Fill in var info. Lookup in table and store lookup ID.
+    output->varPair = pair;
     return output;
 }
 
@@ -236,14 +248,17 @@ ASTnode* create_AST_ARRAY_REF(char* varId, ASTnode* arrayIndex){
 ASTnode* create_AST_VAR_LIST(ASTnode* idNode){
     ASTnode* output = calloc(1, sizeof(ASTnode));
     output->nodeType = AST_VAR_LIST;
-    //TODO
-    //Add idNode to a list of ids in output
+    printf("VARLIST adding child\n");
+    addASTnodeChildren(output, (ASTnode**){idNode}, 1);
+    printf("VARLIST added child\n");
     return output;
 }
 
 ASTnode* merge_AST_VAR_LIST(ASTnode* a, ASTnode* b){
-    //TODO
-    //Merge the id lists and return one of them
+    addASTnodeChildren(a, b->children, b->numChildren);
+    free(b->children);
+    free(b);
+    return a;
 }
 
 ASTnode* create_AST_IFELSE(){

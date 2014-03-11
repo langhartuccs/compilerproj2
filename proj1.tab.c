@@ -93,6 +93,7 @@ typedef struct astnodestruct {
     int maxChildren;
     int numChildren;
     int ival;
+    char* varName;
     float fval;
     struct astnodestruct** children;
 } ASTnode;
@@ -120,7 +121,7 @@ NameTypePair* lookupVar(char*);
 
 
 /* Line 268 of yacc.c  */
-#line 124 "proj1.tab.c"
+#line 125 "proj1.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -190,7 +191,7 @@ typedef union YYSTYPE
 {
 
 /* Line 293 of yacc.c  */
-#line 67 "proj1.y"
+#line 68 "proj1.y"
 
     float fval;
     int ival;
@@ -200,7 +201,7 @@ typedef union YYSTYPE
 
 
 /* Line 293 of yacc.c  */
-#line 204 "proj1.tab.c"
+#line 205 "proj1.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -212,7 +213,7 @@ typedef union YYSTYPE
 
 
 /* Line 343 of yacc.c  */
-#line 216 "proj1.tab.c"
+#line 217 "proj1.tab.c"
 
 #ifdef short
 # undef short
@@ -521,11 +522,11 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    75,    75,    76,    77,    78,    80,    81,    82,    83,
-      84,    86,    87,    89,    90,    92,    93,    95,    97,    99,
-     100,   101,   102,   103,   104,   105,   106,   107,   108,   109,
-     111,   112,   113,   114,   115,   116,   117,   118,   119,   120,
-     122,   123,   125,   126,   127,   128
+       0,    76,    76,    77,    78,    79,    81,    82,    83,    84,
+      85,    87,    88,    90,    91,    93,    94,    96,    98,   100,
+     101,   102,   103,   104,   105,   106,   107,   108,   109,   110,
+     112,   113,   114,   115,   116,   117,   118,   119,   120,   121,
+     123,   124,   126,   127,   128,   129
 };
 #endif
 
@@ -1517,91 +1518,91 @@ yyreduce:
         case 13:
 
 /* Line 1806 of yacc.c  */
-#line 89 "proj1.y"
+#line 90 "proj1.y"
     { (yyval.astNode) = registerVars((yyvsp[(2) - (3)].astNode), INT);}
     break;
 
   case 14:
 
 /* Line 1806 of yacc.c  */
-#line 90 "proj1.y"
+#line 91 "proj1.y"
     { (yyval.astNode) = registerVars((yyvsp[(2) - (3)].astNode), FLOAT);}
     break;
 
   case 15:
 
 /* Line 1806 of yacc.c  */
-#line 92 "proj1.y"
+#line 93 "proj1.y"
     { (yyval.astNode) = create_AST_VAR_LIST((yyvsp[(1) - (1)].astNode));}
     break;
 
   case 16:
 
 /* Line 1806 of yacc.c  */
-#line 93 "proj1.y"
+#line 94 "proj1.y"
     { (yyval.astNode) = merge_AST_VAR_LIST((yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 30:
 
 /* Line 1806 of yacc.c  */
-#line 111 "proj1.y"
+#line 112 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_PLUS, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 31:
 
 /* Line 1806 of yacc.c  */
-#line 112 "proj1.y"
+#line 113 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_MINUS, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 32:
 
 /* Line 1806 of yacc.c  */
-#line 113 "proj1.y"
+#line 114 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_MULT, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 33:
 
 /* Line 1806 of yacc.c  */
-#line 114 "proj1.y"
+#line 115 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_DIV, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 37:
 
 /* Line 1806 of yacc.c  */
-#line 118 "proj1.y"
+#line 119 "proj1.y"
     { (yyval.astNode) = create_AST_LITERAL_INT((yyvsp[(1) - (1)].ival));}
     break;
 
   case 38:
 
 /* Line 1806 of yacc.c  */
-#line 119 "proj1.y"
+#line 120 "proj1.y"
     { (yyval.astNode) = create_AST_LITERAL_FLOAT((yyvsp[(1) - (1)].fval));}
     break;
 
   case 40:
 
 /* Line 1806 of yacc.c  */
-#line 122 "proj1.y"
+#line 123 "proj1.y"
     {(yyval.astNode) = create_AST_VAR_REF((yyvsp[(1) - (1)].sval));}
     break;
 
   case 41:
 
 /* Line 1806 of yacc.c  */
-#line 123 "proj1.y"
+#line 124 "proj1.y"
     {(yyval.astNode) = create_AST_ARRAY_REF((yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].astNode));}
     break;
 
 
 
 /* Line 1806 of yacc.c  */
-#line 1605 "proj1.tab.c"
+#line 1606 "proj1.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1832,7 +1833,7 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 129 "proj1.y"
+#line 130 "proj1.y"
 
     #include "./lex.yy.c"
 
@@ -1841,13 +1842,24 @@ yyreturn:
 VARtable varTable;
 
 ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
+    int i;
     printf("registerVars()\n");
     ASTnode* output = calloc(1, sizeof(ASTnode));
     output->nodeType = AST_VAR_DECL;
-    //TODO
-    //Cycle through vars and register them
+    for(i = 0; i < vars->numChildren; i++){
+
+        ASTnode* child = vars->children[i];
+        if(child->varName == NULL)
+            printf("varName is NULL\n");
+        if(lookupVar(child->varName) != NULL){
+            printf("Variable already registered!");
+            //TODO throw error
+        }
+        child->varPair = registerVar(child->varName, vartype);
+        child->varType = vartype;
+    }
     output->varType = vartype;
-    //output.varPair = registerVar();
+    printf("Registered vars\n");
     return output;
 }
 
@@ -1925,10 +1937,10 @@ ASTnode* create_AST_LITERAL_FLOAT(float value){
 ASTnode* create_AST_VAR_REF(char* var){
     ASTnode* output = calloc(1, sizeof(ASTnode));
     output->nodeType = AST_VAR_REF;
-    if(lookupVar(var) == NULL)
+    NameTypePair* pair = lookupVar(var);
+    if(pair == NULL)
         printf("Var %s not registered\n", var);
-    //TODO
-    //Fill in var info. Lookup in table and store lookup ID.
+    output->varPair = pair;
     return output;
 }
 
@@ -1943,14 +1955,17 @@ ASTnode* create_AST_ARRAY_REF(char* varId, ASTnode* arrayIndex){
 ASTnode* create_AST_VAR_LIST(ASTnode* idNode){
     ASTnode* output = calloc(1, sizeof(ASTnode));
     output->nodeType = AST_VAR_LIST;
-    //TODO
-    //Add idNode to a list of ids in output
+    printf("VARLIST adding child\n");
+    addASTnodeChildren(output, (ASTnode**){idNode}, 1);
+    printf("VARLIST added child\n");
     return output;
 }
 
 ASTnode* merge_AST_VAR_LIST(ASTnode* a, ASTnode* b){
-    //TODO
-    //Merge the id lists and return one of them
+    addASTnodeChildren(a, b->children, b->numChildren);
+    free(b->children);
+    free(b);
+    return a;
 }
 
 ASTnode* create_AST_IFELSE(){
