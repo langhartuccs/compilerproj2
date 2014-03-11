@@ -71,16 +71,8 @@
  /* put your c declarations here */
 #define YYDEBUG 1
 
-typedef enum {AST_PROGRAM, AST_WHILE, AST_ASSIGN, AST_TYPEDECL, AST_DECLLIST, AST_IFELSE, AST_LITERAL} ASTNODETYPE;
+typedef enum {AST_PROGRAM, AST_WHILE, AST_ASSIGN, AST_TYPEDECL, AST_DECLLIST, AST_IFELSE, AST_LITERAL, AST_PLUS, AST_MINUS, AST_MULT, AST_DIV, AST_VAR_REF, AST_ARRAY_REF, AST_VAR_DECL, AST_VAR_LIST} ASTNODETYPE;
 typedef enum {TYPE_INTEGER, TYPE_FLOAT, TYPE_BOOLEAN} VARTYPE;
-
-typedef struct astnodestruct {
-    ASTNODETYPE nodeType;
-    VARTYPE varType;
-    int maxChildren;
-    int numChildren;
-    struct astnodestruct** children;
-} ASTnode;
 
 typedef struct {
     char* name;
@@ -93,16 +85,42 @@ typedef struct {
     NameTypePair** pairs;
 } VARtable;
 
+typedef struct astnodestruct {
+    ASTNODETYPE nodeType;
+    VARTYPE varType;
+    NameTypePair* varPair;
+
+    int maxChildren;
+    int numChildren;
+    int ival;
+    float fval;
+    struct astnodestruct** children;
+} ASTnode;
+
+
+
 //varTable.pairs = (NameTypePair**)calloc(sizeof(NameTypePair*)*10, 0);
 //varTable.maxsize = 10;
 
+ASTnode* registerVars(ASTnode*, VARTYPE);
+NameTypePair* registerVar(char*, VARTYPE);
+void doublePairsAllocation(VARtable*);
+void doubleChildrenAllocation(ASTnode*);
+void addASTnodeChildren(ASTnode*, ASTnode**, int);
+
 ASTnode* create_AST_LITERAL_INT(int);
 ASTnode* create_AST_LITERAL_FLOAT(float);
+ASTnode* create_AST_VAR_REF(char*);
+ASTnode* create_AST_ARRAY_REF(char*, ASTnode*);
+ASTnode* create_AST_VAR_LIST(ASTnode*);
+ASTnode* merge_AST_VAR_LIST(ASTnode*, ASTnode*);
+ASTnode* create_AST_BIN_OP(ASTNODETYPE, ASTnode*, ASTnode*);
+NameTypePair* lookupVar(char*);
 
 
 
 /* Line 268 of yacc.c  */
-#line 106 "proj1.tab.c"
+#line 124 "proj1.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -133,9 +151,9 @@ ASTnode* create_AST_LITERAL_FLOAT(float);
      IF = 259,
      ELSE = 260,
      WHILE = 261,
-     ID = 262,
-     INT = 263,
-     FLOAT = 264,
+     INT = 262,
+     FLOAT = 263,
+     ID = 264,
      ICONST = 265,
      FCONST = 266,
      LPAREN = 267,
@@ -172,16 +190,17 @@ typedef union YYSTYPE
 {
 
 /* Line 293 of yacc.c  */
-#line 49 "proj1.y"
+#line 67 "proj1.y"
 
     float fval;
     int ival;
+    char* sval;
     ASTnode* astNode;
 
 
 
 /* Line 293 of yacc.c  */
-#line 185 "proj1.tab.c"
+#line 204 "proj1.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -193,7 +212,7 @@ typedef union YYSTYPE
 
 
 /* Line 343 of yacc.c  */
-#line 197 "proj1.tab.c"
+#line 216 "proj1.tab.c"
 
 #ifdef short
 # undef short
@@ -484,7 +503,7 @@ static const yytype_int8 yyrhs[] =
       15,    -1,    14,    37,    15,    37,    -1,    39,    -1,    40,
       -1,    42,    -1,    43,    -1,     3,    -1,     4,    12,    44,
       13,    37,     5,    37,    -1,     4,    12,    44,    13,    37,
-      -1,     8,    41,    17,    -1,     9,    41,    17,    -1,    46,
+      -1,     7,    41,    17,    -1,     8,    41,    17,    -1,    46,
       -1,    46,    18,    41,    -1,     6,    12,    44,    13,    37,
       -1,    46,    16,    45,    17,    -1,    34,    44,    -1,    12,
       44,    13,    -1,    44,    28,    44,    -1,    44,    25,    44,
@@ -493,20 +512,20 @@ static const yytype_int8 yyrhs[] =
       -1,    44,    23,    44,    -1,    45,    -1,    45,    30,    45,
       -1,    45,    29,    45,    -1,    45,    32,    45,    -1,    45,
       31,    45,    -1,    12,    45,    13,    -1,    29,    45,    -1,
-      30,    45,    -1,    10,    -1,    11,    -1,    46,    -1,     7,
-      -1,     7,    47,    -1,    19,    10,    20,    -1,    19,     7,
-      20,    -1,    19,    10,    20,    47,    -1,    19,     7,    20,
+      30,    45,    -1,    10,    -1,    11,    -1,    46,    -1,     9,
+      -1,     9,    47,    -1,    19,    10,    20,    -1,    19,     9,
+      20,    -1,    19,    10,    20,    47,    -1,    19,     9,    20,
       47,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    56,    56,    57,    58,    59,    61,    62,    63,    64,
-      65,    67,    68,    70,    71,    73,    74,    76,    78,    80,
-      81,    82,    83,    84,    85,    86,    87,    88,    89,    90,
-      92,    93,    94,    95,    96,    97,    98,    99,   100,   101,
-     103,   104,   106,   107,   108,   109
+       0,    75,    75,    76,    77,    78,    80,    81,    82,    83,
+      84,    86,    87,    89,    90,    92,    93,    95,    97,    99,
+     100,   101,   102,   103,   104,   105,   106,   107,   108,   109,
+     111,   112,   113,   114,   115,   116,   117,   118,   119,   120,
+     122,   123,   125,   126,   127,   128
 };
 #endif
 
@@ -515,8 +534,8 @@ static const yytype_uint8 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "COMMENT", "IF", "ELSE", "WHILE", "ID",
-  "INT", "FLOAT", "ICONST", "FCONST", "LPAREN", "RPAREN", "LBRACE",
+  "$end", "error", "$undefined", "COMMENT", "IF", "ELSE", "WHILE", "INT",
+  "FLOAT", "ID", "ICONST", "FCONST", "LPAREN", "RPAREN", "LBRACE",
   "RBRACE", "ASSIGN", "SEMICOLON", "COMMA", "LBRACKET", "RBRACKET", "OR",
   "AND", "EQ", "GT", "LT", "GE", "LE", "NE", "MINUS", "PLUS", "DIV",
   "MULT", "UPLUS", "NOT", "UMINUS", "$accept", "start", "stmt", "ifstmt",
@@ -562,13 +581,13 @@ static const yytype_uint8 yyr2[] =
    means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,    10,     0,     0,    40,     0,     0,     0,     0,     2,
-       6,     7,     8,     9,     0,     0,     0,     0,    41,     0,
-      15,     0,     0,     1,     3,     0,    37,    38,     0,     0,
-       0,     0,     0,    29,    39,     0,     0,     0,    13,     0,
-      14,     4,     0,     0,     0,    29,    35,    36,    19,     0,
+       0,    10,     0,     0,     0,     0,    40,     0,     0,     2,
+       6,     7,     8,     9,     0,     0,     0,     0,    15,     0,
+       0,    41,     0,     1,     3,     0,    37,    38,     0,     0,
+       0,     0,     0,    29,    39,     0,    13,     0,    14,     0,
+       0,     4,     0,     0,     0,    29,    35,    36,    19,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    43,    42,    16,     5,     0,    18,    20,
+       0,     0,     0,    16,    43,    42,     5,     0,    18,    20,
       34,    12,    27,    26,    28,    24,    22,    25,    23,    21,
       31,    30,    33,    32,    17,    45,    44,     0,    11
 };
@@ -576,31 +595,31 @@ static const yytype_uint8 yydefact[] =
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     8,     9,    10,    11,    19,    12,    13,    32,    33,
-      34,    18
+      -1,     8,     9,    10,    11,    17,    12,    13,    32,    33,
+      34,    21
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -36
+#define YYPACT_NINF -42
 static const yytype_int8 yypact[] =
 {
-     125,   -36,   -10,     6,     4,    24,    24,   125,    36,   125,
-     -36,   -36,   -36,   -36,    22,    48,    48,     9,   -36,    23,
-      26,    29,    32,   -36,   -36,     3,   -36,   -36,    48,     3,
-       3,    48,    67,    54,   -36,    83,    28,    34,   -36,    24,
-     -36,   125,     3,    44,    99,    -5,   -36,   -36,   -36,   125,
-      48,    48,    48,    48,    48,    48,    48,    48,     3,     3,
-       3,     3,   125,     4,     4,   -36,   -36,    -5,   -36,   -36,
-     -36,    52,   -36,   -36,   -36,   -36,   -36,   -36,   -36,   -36,
-     -20,   -20,   -36,   -36,   -36,   -36,   -36,   125,   -36
+     125,   -42,   -10,    -4,    16,    16,    -9,   125,    33,   125,
+     -42,   -42,   -42,   -42,    23,     2,     2,    27,    22,    31,
+       6,   -42,    39,   -42,   -42,    17,   -42,   -42,     2,    17,
+      17,     2,    67,    29,   -42,    83,   -42,    16,   -42,    35,
+      43,   125,    17,    68,    99,    44,   -42,   -42,   -42,   125,
+       2,     2,     2,     2,     2,     2,     2,     2,    17,    17,
+      17,    17,   125,   -42,    -9,    -9,   -42,    44,   -42,   -42,
+     -42,    72,   -42,   -42,   -42,   -42,   -42,   -42,   -42,   -42,
+     -13,   -13,   -42,   -42,   -42,   -42,   -42,   125,   -42
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -36,    -6,   -36,   -36,   -36,    -2,   -36,   -36,    14,    -8,
-       0,   -35
+     -42,    -6,   -42,   -42,   -42,     1,   -42,   -42,    14,    -8,
+       0,   -41
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -609,41 +628,41 @@ static const yytype_int8 yypgoto[] =
 #define YYTABLE_NINF -1
 static const yytype_uint8 yytable[] =
 {
-      14,    22,    15,    24,    21,    20,    20,    14,    70,    14,
-       4,    60,    61,    26,    27,    42,    36,    43,    16,    37,
-      45,    46,    47,    17,    58,    59,    60,    61,    85,    86,
-      35,     4,    29,    30,    67,    66,    23,    65,    25,    20,
-      38,    14,    44,    71,    39,    48,    40,    41,    63,    14,
-      80,    81,    82,    83,    64,     4,    84,    87,    26,    27,
-      28,    68,    14,     0,    72,    73,    74,    75,    76,    77,
-      78,    79,     0,    58,    59,    60,    61,    29,    30,     0,
-      49,    88,    31,    58,    59,    60,    61,    14,    50,    51,
-      52,    53,    54,    55,    56,    57,    62,     0,     0,     0,
-       0,     0,     0,     0,    50,    51,    52,    53,    54,    55,
+      14,    22,    15,    24,    18,    18,    19,    14,    16,    14,
+      20,     6,    26,    27,    28,    39,    40,    43,    60,    61,
+      45,    46,    47,    85,    86,     6,     6,    26,    27,    42,
+      35,    29,    30,    23,    67,    66,    31,    18,    63,    25,
+      37,    14,    44,    71,    36,    48,    29,    30,    38,    14,
+      80,    81,    82,    83,    41,    64,    84,    70,    58,    59,
+      60,    61,    14,    65,    72,    73,    74,    75,    76,    77,
+      78,    79,     0,    58,    59,    60,    61,    87,     0,     0,
+      49,    88,     0,     0,     0,    68,     0,    14,    50,    51,
+      52,    53,    54,    55,    56,    57,    62,    58,    59,    60,
+      61,     0,     0,     0,    50,    51,    52,    53,    54,    55,
       56,    57,    69,     0,     0,     0,     0,     0,     0,     0,
       50,    51,    52,    53,    54,    55,    56,    57,     1,     2,
        0,     3,     4,     5,     6,     0,     0,     0,     0,     7
 };
 
 #define yypact_value_is_default(yystate) \
-  ((yystate) == (-36))
+  ((yystate) == (-42))
 
 #define yytable_value_is_error(yytable_value) \
   YYID (0)
 
 static const yytype_int8 yycheck[] =
 {
-       0,     7,    12,     9,     6,     5,     6,     7,    13,     9,
-       7,    31,    32,    10,    11,    12,     7,    25,    12,    10,
-      28,    29,    30,    19,    29,    30,    31,    32,    63,    64,
-      16,     7,    29,    30,    42,    41,     0,    39,    16,    39,
-      17,    41,    28,    49,    18,    31,    17,    15,    20,    49,
-      58,    59,    60,    61,    20,     7,    62,     5,    10,    11,
-      12,    17,    62,    -1,    50,    51,    52,    53,    54,    55,
-      56,    57,    -1,    29,    30,    31,    32,    29,    30,    -1,
-      13,    87,    34,    29,    30,    31,    32,    87,    21,    22,
-      23,    24,    25,    26,    27,    28,    13,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    21,    22,    23,    24,    25,    26,
+       0,     7,    12,     9,     4,     5,     5,     7,    12,     9,
+      19,     9,    10,    11,    12,     9,    10,    25,    31,    32,
+      28,    29,    30,    64,    65,     9,     9,    10,    11,    12,
+      16,    29,    30,     0,    42,    41,    34,    37,    37,    16,
+      18,    41,    28,    49,    17,    31,    29,    30,    17,    49,
+      58,    59,    60,    61,    15,    20,    62,    13,    29,    30,
+      31,    32,    62,    20,    50,    51,    52,    53,    54,    55,
+      56,    57,    -1,    29,    30,    31,    32,     5,    -1,    -1,
+      13,    87,    -1,    -1,    -1,    17,    -1,    87,    21,    22,
+      23,    24,    25,    26,    27,    28,    13,    29,    30,    31,
+      32,    -1,    -1,    -1,    21,    22,    23,    24,    25,    26,
       27,    28,    13,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
       21,    22,    23,    24,    25,    26,    27,    28,     3,     4,
       -1,     6,     7,     8,     9,    -1,    -1,    -1,    -1,    14
@@ -654,12 +673,12 @@ static const yytype_int8 yycheck[] =
 static const yytype_uint8 yystos[] =
 {
        0,     3,     4,     6,     7,     8,     9,    14,    37,    38,
-      39,    40,    42,    43,    46,    12,    12,    19,    47,    41,
-      46,    41,    37,     0,    37,    16,    10,    11,    12,    29,
-      30,    34,    44,    45,    46,    44,     7,    10,    17,    18,
-      17,    15,    12,    45,    44,    45,    45,    45,    44,    13,
+      39,    40,    42,    43,    46,    12,    12,    41,    46,    41,
+      19,    47,    37,     0,    37,    16,    10,    11,    12,    29,
+      30,    34,    44,    45,    46,    44,    17,    18,    17,     9,
+      10,    15,    12,    45,    44,    45,    45,    45,    44,    13,
       21,    22,    23,    24,    25,    26,    27,    28,    29,    30,
-      31,    32,    13,    20,    20,    41,    37,    45,    17,    13,
+      31,    32,    13,    41,    20,    20,    37,    45,    17,    13,
       13,    37,    44,    44,    44,    44,    44,    44,    44,    44,
       45,    45,    45,    45,    37,    47,    47,     5,    37
 };
@@ -1495,24 +1514,94 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 37:
+        case 13:
 
 /* Line 1806 of yacc.c  */
-#line 99 "proj1.y"
-    {printf("ICONST:%d\n", (yyvsp[(1) - (1)].ival)); (yyval.astNode) = create_AST_LITERAL_INT((yyvsp[(1) - (1)].ival));}
+#line 89 "proj1.y"
+    { (yyval.astNode) = registerVars((yyvsp[(2) - (3)].astNode), INT);}
+    break;
+
+  case 14:
+
+/* Line 1806 of yacc.c  */
+#line 90 "proj1.y"
+    { (yyval.astNode) = registerVars((yyvsp[(2) - (3)].astNode), FLOAT);}
+    break;
+
+  case 15:
+
+/* Line 1806 of yacc.c  */
+#line 92 "proj1.y"
+    { (yyval.astNode) = create_AST_VAR_LIST((yyvsp[(1) - (1)].astNode));}
+    break;
+
+  case 16:
+
+/* Line 1806 of yacc.c  */
+#line 93 "proj1.y"
+    { (yyval.astNode) = merge_AST_VAR_LIST((yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
+    break;
+
+  case 30:
+
+/* Line 1806 of yacc.c  */
+#line 111 "proj1.y"
+    { (yyval.astNode) = create_AST_BIN_OP(AST_PLUS, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
+    break;
+
+  case 31:
+
+/* Line 1806 of yacc.c  */
+#line 112 "proj1.y"
+    { (yyval.astNode) = create_AST_BIN_OP(AST_MINUS, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
+    break;
+
+  case 32:
+
+/* Line 1806 of yacc.c  */
+#line 113 "proj1.y"
+    { (yyval.astNode) = create_AST_BIN_OP(AST_MULT, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
+    break;
+
+  case 33:
+
+/* Line 1806 of yacc.c  */
+#line 114 "proj1.y"
+    { (yyval.astNode) = create_AST_BIN_OP(AST_DIV, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
+    break;
+
+  case 37:
+
+/* Line 1806 of yacc.c  */
+#line 118 "proj1.y"
+    { (yyval.astNode) = create_AST_LITERAL_INT((yyvsp[(1) - (1)].ival));}
     break;
 
   case 38:
 
 /* Line 1806 of yacc.c  */
-#line 100 "proj1.y"
-    {printf("FCONST:%f\n", (yyvsp[(1) - (1)].fval)); (yyval.astNode) = create_AST_LITERAL_FLOAT((yyvsp[(1) - (1)].fval));}
+#line 119 "proj1.y"
+    { (yyval.astNode) = create_AST_LITERAL_FLOAT((yyvsp[(1) - (1)].fval));}
+    break;
+
+  case 40:
+
+/* Line 1806 of yacc.c  */
+#line 122 "proj1.y"
+    {(yyval.astNode) = create_AST_VAR_REF((yyvsp[(1) - (1)].sval));}
+    break;
+
+  case 41:
+
+/* Line 1806 of yacc.c  */
+#line 123 "proj1.y"
+    {(yyval.astNode) = create_AST_ARRAY_REF((yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].astNode));}
     break;
 
 
 
 /* Line 1806 of yacc.c  */
-#line 1516 "proj1.tab.c"
+#line 1605 "proj1.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1743,34 +1832,49 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 110 "proj1.y"
+#line 129 "proj1.y"
 
     #include "./lex.yy.c"
 
-ASTnode registerVar(char*, VARTYPE);
-void doublePairsAllocation(VARtable*);
-void doubleChildrenAllocation(ASTnode*);
+
 
 VARtable varTable;
 
-ASTnode registerVar(char* name, VARTYPE vartype){
+ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
+    printf("registerVars()\n");
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_VAR_DECL;
+    //TODO
+    //Cycle through vars and register them
+    output->varType = vartype;
+    //output.varPair = registerVar();
+    return output;
+}
+
+NameTypePair* registerVar(char* name, VARTYPE vartype){
+    printf("registerVar()\n");
     if(varTable.currentsize == varTable.maxsize)
         doublePairsAllocation(&varTable);
 
-    NameTypePair* pair = (NameTypePair*)calloc(sizeof(NameTypePair), 0);
+    NameTypePair* pair = calloc(1, sizeof(NameTypePair));
     varTable.pairs[varTable.currentsize++] = pair;
 
     pair->name = name;
     pair->vartype = vartype;
+    
+    return pair;
+}
 
-    ASTnode output;
-    output.nodeType = AST_LITERAL;
-    output.varType = vartype;
-    return output;
+NameTypePair* lookupVar(char* name){
+    printf("lookupVar()\n");
+    return NULL;
 }
 
 void doublePairsAllocation(VARtable* table){
-    table->pairs = realloc(table->pairs, table->maxsize*2);
+    printf("doublePairsAllocation()\n");
+    if(table->maxsize == 0)
+        table->maxsize = 5;
+    table->pairs = realloc(table->pairs, sizeof(NameTypePair*)*(table->maxsize*2));
     if(table->pairs == NULL){
         printf("Pairs reallocation failed!");
         exit(-1);
@@ -1779,7 +1883,10 @@ void doublePairsAllocation(VARtable* table){
 }
 
 void doubleChildrenAllocation(ASTnode* node){
-    node->children = realloc(node->children, node->maxChildren*2);
+    printf("doubleChildrenAllocation()\n");
+    if(node->maxChildren == 0)
+        node->maxChildren = 2;
+    node->children = realloc(node->children, sizeof(ASTnode*)*(node->maxChildren*2));
     if(node->children == NULL){
         printf("Pairs reallocation failed!");
         exit(-1);
@@ -1787,12 +1894,63 @@ void doubleChildrenAllocation(ASTnode* node){
     node->maxChildren *= 2;
 }
 
+void addASTnodeChildren(ASTnode* parent, ASTnode** children, int numChildren){
+    printf("addASTnodeChildren()\n");
+    int i = 0;
+    while(parent->numChildren + numChildren > parent->maxChildren){
+        doubleChildrenAllocation(parent);
+    }
+
+    for(i = 0; i < numChildren; i++){
+        parent->children[parent->numChildren++] = children[i];
+    }
+}
+
 ASTnode* create_AST_LITERAL_INT(int value){
-	return calloc(sizeof(ASTnode), 0);
+	ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_LITERAL;
+    output->ival = value;
+    output->varType = TYPE_INTEGER;
+    return output;
 }
 
 ASTnode* create_AST_LITERAL_FLOAT(float value){
-    return calloc(sizeof(ASTnode), 0);
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_LITERAL;
+    output->fval = value;
+    output->varType = TYPE_FLOAT;
+    return output;
+}
+
+ASTnode* create_AST_VAR_REF(char* var){
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_VAR_REF;
+    if(lookupVar(var) == NULL)
+        printf("Var %s not registered\n", var);
+    //TODO
+    //Fill in var info. Lookup in table and store lookup ID.
+    return output;
+}
+
+ASTnode* create_AST_ARRAY_REF(char* varId, ASTnode* arrayIndex){
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_ARRAY_REF;
+    //TODO
+    //Fill in array info - name, sizes/indices
+    return output;
+}
+
+ASTnode* create_AST_VAR_LIST(ASTnode* idNode){
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_VAR_LIST;
+    //TODO
+    //Add idNode to a list of ids in output
+    return output;
+}
+
+ASTnode* merge_AST_VAR_LIST(ASTnode* a, ASTnode* b){
+    //TODO
+    //Merge the id lists and return one of them
 }
 
 ASTnode* create_AST_IFELSE(){
@@ -1817,4 +1975,11 @@ ASTnode* create_AST_WHILE(){
 
 ASTnode* create_AST_PROGRAM(){
 	
+}
+
+ASTnode* create_AST_BIN_OP(ASTNODETYPE binOpType, ASTnode* a, ASTnode* b){
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = binOpType;
+    addASTnodeChildren(output, (ASTnode*[]){a, b}, 2);
+    return output;
 }

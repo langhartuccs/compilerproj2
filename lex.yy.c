@@ -952,7 +952,7 @@ YY_RULE_SETUP
 case 29:
 YY_RULE_SETUP
 #line 40 "proj1.l"
-{ return ID; }
+{ yylval.sval = strdup(yytext); return ID; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP

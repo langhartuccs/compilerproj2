@@ -37,7 +37,7 @@
 "," { return COMMA; }
 "&&" { return AND; }
 "||" { return OR; }
-[A-Za-z]+[A-Za-z_0-9]* { return ID; }
+[A-Za-z]+[A-Za-z0-9_]* { yylval.sval = strdup(yytext); return ID; }
 [0-9]+"."[0-9]* { yylval.fval = strtof(yytext, NULL); return FCONST; }
 [0-9]+ { yylval.ival = atoi(yytext); return ICONST; }
 [ \t\n\r]+  /*ignores whitespace*/

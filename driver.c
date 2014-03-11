@@ -23,9 +23,9 @@ int main(int argc, char** argv)
      exit(1);
   }
   yyin = stdin;
-  yydebug=1;
+  yydebug=0;
   yyparse();
-  printf("Successful Parse");
+  printf("Successful Parse\n");
   return 0;
 }
 

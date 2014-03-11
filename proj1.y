@@ -1,31 +1,23 @@
 
 
-%token <astNode> COMMENT IF ELSE WHILE ID INT FLOAT
+%token  COMMENT IF ELSE WHILE INT FLOAT
+%token <sval> ID
 %token <ival> ICONST
 %token <fval> FCONST
-%token <astNode> LPAREN RPAREN LBRACE RBRACE ASSIGN SEMICOLON COMMA LBRACKET RBRACKET
-%left <astNode> NE LE GE LT GT EQ AND OR
-%left <astNode> PLUS MINUS
-%left <astNode> MULT DIV
-%right <astNode> UMINUS NOT UPLUS
+%token  LPAREN RPAREN LBRACE RBRACE ASSIGN SEMICOLON COMMA LBRACKET RBRACKET
+%left  NE LE GE LT GT EQ AND OR
+%left  PLUS MINUS
+%left  MULT DIV
+%right  UMINUS NOT UPLUS
 
-%type <astNode> expr
-
+%type <astNode> expr idstmt array vardecl var
 
 %{
  /* put your c declarations here */
 #define YYDEBUG 1
 
-typedef enum {AST_PROGRAM, AST_WHILE, AST_ASSIGN, AST_TYPEDECL, AST_DECLLIST, AST_IFELSE, AST_LITERAL} ASTNODETYPE;
+typedef enum {AST_PROGRAM, AST_WHILE, AST_ASSIGN, AST_TYPEDECL, AST_DECLLIST, AST_IFELSE, AST_LITERAL, AST_PLUS, AST_MINUS, AST_MULT, AST_DIV, AST_VAR_REF, AST_ARRAY_REF, AST_VAR_DECL, AST_VAR_LIST} ASTNODETYPE;
 typedef enum {TYPE_INTEGER, TYPE_FLOAT, TYPE_BOOLEAN} VARTYPE;
-
-typedef struct astnodestruct {
-    ASTNODETYPE nodeType;
-    VARTYPE varType;
-    int maxChildren;
-    int numChildren;
-    struct astnodestruct** children;
-} ASTnode;
 
 typedef struct {
     char* name;
@@ -38,17 +30,44 @@ typedef struct {
     NameTypePair** pairs;
 } VARtable;
 
+typedef struct astnodestruct {
+    ASTNODETYPE nodeType;
+    VARTYPE varType;
+    NameTypePair* varPair;
+
+    int maxChildren;
+    int numChildren;
+    int ival;
+    float fval;
+    struct astnodestruct** children;
+} ASTnode;
+
+
+
 //varTable.pairs = (NameTypePair**)calloc(sizeof(NameTypePair*)*10, 0);
 //varTable.maxsize = 10;
 
+ASTnode* registerVars(ASTnode*, VARTYPE);
+NameTypePair* registerVar(char*, VARTYPE);
+void doublePairsAllocation(VARtable*);
+void doubleChildrenAllocation(ASTnode*);
+void addASTnodeChildren(ASTnode*, ASTnode**, int);
+
 ASTnode* create_AST_LITERAL_INT(int);
 ASTnode* create_AST_LITERAL_FLOAT(float);
+ASTnode* create_AST_VAR_REF(char*);
+ASTnode* create_AST_ARRAY_REF(char*, ASTnode*);
+ASTnode* create_AST_VAR_LIST(ASTnode*);
+ASTnode* merge_AST_VAR_LIST(ASTnode*, ASTnode*);
+ASTnode* create_AST_BIN_OP(ASTNODETYPE, ASTnode*, ASTnode*);
+NameTypePair* lookupVar(char*);
 
 %}
 
 %union {
     float fval;
     int ival;
+    char* sval;
     ASTnode* astNode;
 }
 
@@ -67,11 +86,11 @@ stmt:ifstmt
 ifstmt:IF LPAREN boolean RPAREN start ELSE start
     | IF LPAREN boolean RPAREN start
     ;
-vardecl:INT var SEMICOLON
-    |FLOAT var SEMICOLON
+vardecl:INT var SEMICOLON { $$ = registerVars($2, INT);}
+    |FLOAT var SEMICOLON { $$ = registerVars($2, FLOAT);}
     ;
-var:    idstmt
-    |idstmt COMMA var
+var:    idstmt { $$ = create_AST_VAR_LIST($1);}
+    |idstmt COMMA var { $$ = merge_AST_VAR_LIST($1, $3);}
     ;
 whilestmt:WHILE LPAREN boolean RPAREN start
     ;
@@ -89,19 +108,19 @@ boolean:NOT boolean
     |boolean EQ boolean
     |expr
     ;
-expr:expr PLUS expr
-    |expr MINUS expr
-    |expr MULT expr
-    |expr DIV expr
+expr:expr PLUS expr { $$ = create_AST_BIN_OP(AST_PLUS, $1, $3);}
+    |expr MINUS expr { $$ = create_AST_BIN_OP(AST_MINUS, $1, $3);}
+    |expr MULT expr  { $$ = create_AST_BIN_OP(AST_MULT, $1, $3);}
+    |expr DIV expr  { $$ = create_AST_BIN_OP(AST_DIV, $1, $3);}
     |LPAREN expr RPAREN
     |MINUS expr %prec UMINUS
     |PLUS expr %prec UPLUS
-    |ICONST 		{printf("ICONST:%d\n", $1); $$ = create_AST_LITERAL_INT($1);}									
-    |FCONST         {printf("FCONST:%f\n", $1); $$ = create_AST_LITERAL_FLOAT($1);}   
+    |ICONST 		{ $$ = create_AST_LITERAL_INT($1);}									
+    |FCONST         { $$ = create_AST_LITERAL_FLOAT($1);}   
     |idstmt
     ;
-idstmt:ID
-    | ID array
+idstmt:ID  {$$ = create_AST_VAR_REF($1);}
+    | ID array  {$$ = create_AST_ARRAY_REF($1, $2);}
     ;
 array:LBRACKET ICONST RBRACKET
     |LBRACKET ID RBRACKET
@@ -110,30 +129,45 @@ array:LBRACKET ICONST RBRACKET
 %%
     #include "./lex.yy.c"
 
-ASTnode registerVar(char*, VARTYPE);
-void doublePairsAllocation(VARtable*);
-void doubleChildrenAllocation(ASTnode*);
+
 
 VARtable varTable;
 
-ASTnode registerVar(char* name, VARTYPE vartype){
+ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
+    printf("registerVars()\n");
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_VAR_DECL;
+    //TODO
+    //Cycle through vars and register them
+    output->varType = vartype;
+    //output.varPair = registerVar();
+    return output;
+}
+
+NameTypePair* registerVar(char* name, VARTYPE vartype){
+    printf("registerVar()\n");
     if(varTable.currentsize == varTable.maxsize)
         doublePairsAllocation(&varTable);
 
-    NameTypePair* pair = (NameTypePair*)calloc(sizeof(NameTypePair), 0);
+    NameTypePair* pair = calloc(1, sizeof(NameTypePair));
     varTable.pairs[varTable.currentsize++] = pair;
 
     pair->name = name;
     pair->vartype = vartype;
+    
+    return pair;
+}
 
-    ASTnode output;
-    output.nodeType = AST_LITERAL;
-    output.varType = vartype;
-    return output;
+NameTypePair* lookupVar(char* name){
+    printf("lookupVar()\n");
+    return NULL;
 }
 
 void doublePairsAllocation(VARtable* table){
-    table->pairs = realloc(table->pairs, table->maxsize*2);
+    printf("doublePairsAllocation()\n");
+    if(table->maxsize == 0)
+        table->maxsize = 5;
+    table->pairs = realloc(table->pairs, sizeof(NameTypePair*)*(table->maxsize*2));
     if(table->pairs == NULL){
         printf("Pairs reallocation failed!");
         exit(-1);
@@ -142,7 +176,10 @@ void doublePairsAllocation(VARtable* table){
 }
 
 void doubleChildrenAllocation(ASTnode* node){
-    node->children = realloc(node->children, node->maxChildren*2);
+    printf("doubleChildrenAllocation()\n");
+    if(node->maxChildren == 0)
+        node->maxChildren = 2;
+    node->children = realloc(node->children, sizeof(ASTnode*)*(node->maxChildren*2));
     if(node->children == NULL){
         printf("Pairs reallocation failed!");
         exit(-1);
@@ -150,12 +187,63 @@ void doubleChildrenAllocation(ASTnode* node){
     node->maxChildren *= 2;
 }
 
+void addASTnodeChildren(ASTnode* parent, ASTnode** children, int numChildren){
+    printf("addASTnodeChildren()\n");
+    int i = 0;
+    while(parent->numChildren + numChildren > parent->maxChildren){
+        doubleChildrenAllocation(parent);
+    }
+
+    for(i = 0; i < numChildren; i++){
+        parent->children[parent->numChildren++] = children[i];
+    }
+}
+
 ASTnode* create_AST_LITERAL_INT(int value){
-	return calloc(sizeof(ASTnode), 0);
+	ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_LITERAL;
+    output->ival = value;
+    output->varType = TYPE_INTEGER;
+    return output;
 }
 
 ASTnode* create_AST_LITERAL_FLOAT(float value){
-    return calloc(sizeof(ASTnode), 0);
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_LITERAL;
+    output->fval = value;
+    output->varType = TYPE_FLOAT;
+    return output;
+}
+
+ASTnode* create_AST_VAR_REF(char* var){
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_VAR_REF;
+    if(lookupVar(var) == NULL)
+        printf("Var %s not registered\n", var);
+    //TODO
+    //Fill in var info. Lookup in table and store lookup ID.
+    return output;
+}
+
+ASTnode* create_AST_ARRAY_REF(char* varId, ASTnode* arrayIndex){
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_ARRAY_REF;
+    //TODO
+    //Fill in array info - name, sizes/indices
+    return output;
+}
+
+ASTnode* create_AST_VAR_LIST(ASTnode* idNode){
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = AST_VAR_LIST;
+    //TODO
+    //Add idNode to a list of ids in output
+    return output;
+}
+
+ASTnode* merge_AST_VAR_LIST(ASTnode* a, ASTnode* b){
+    //TODO
+    //Merge the id lists and return one of them
 }
 
 ASTnode* create_AST_IFELSE(){
@@ -180,4 +268,11 @@ ASTnode* create_AST_WHILE(){
 
 ASTnode* create_AST_PROGRAM(){
 	
+}
+
+ASTnode* create_AST_BIN_OP(ASTNODETYPE binOpType, ASTnode* a, ASTnode* b){
+    ASTnode* output = calloc(1, sizeof(ASTnode));
+    output->nodeType = binOpType;
+    addASTnodeChildren(output, (ASTnode*[]){a, b}, 2);
+    return output;
 }
