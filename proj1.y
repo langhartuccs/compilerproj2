@@ -105,8 +105,8 @@ stmt:ifstmt
 ifstmt:IF LPAREN boolean RPAREN start ELSE start { $$ = create_AST_IFELSE($3, $5, $7);}
     | IF LPAREN boolean RPAREN start { $$ = create_AST_IF($3, $5);}
     ;
-vardecl:INT var SEMICOLON { $$ = registerVars($2, INT);}
-    |FLOAT var SEMICOLON { $$ = registerVars($2, FLOAT);}
+vardecl:INT var SEMICOLON { $$ = registerVars($2, TYPE_INTEGER);}
+    |FLOAT var SEMICOLON { $$ = registerVars($2, TYPE_FLOAT);}
     ;
 var:    idstmt { $$ = create_AST_VAR_LIST($1);}
     |idstmt COMMA var { $$ = merge_AST_VAR_LIST(create_AST_VAR_LIST($1), $3);}
@@ -178,7 +178,6 @@ void destroyNameTypePair(NameTypePair* pair){
 
 ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
     int i;
-    printf("registerVars()\n");
     ASTnode* output = newASTnode();
     output->nodeType = AST_VAR_DECL;
     for(i = 0; i < vars->numChildren; i++){
@@ -191,26 +190,24 @@ ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
         child->varType = vartype;
     }
     output->varType = vartype;
+    addASTnodeChildren(output, (ASTnode*[]){vars}, 1);
     return output;
 }
 
 NameTypePair* registerVar(char* name, VARTYPE vartype){
-    printf("registerVar(). name=%s\n", name);
     if(varTable.currentsize == varTable.maxsize)
         doublePairsAllocation(&varTable);
 
     NameTypePair* pair = newNameTypePair();
-    varTable.pairs[varTable.currentsize++] = pair;
-
     pair->name = name;
     pair->vartype = vartype;
+    varTable.pairs[varTable.currentsize++] = pair;
     
     return pair;
 }
 
 NameTypePair* lookupVar(char* name){
     int i;
-    printf("lookupVar()\n");
     for(i = 0; i < varTable.currentsize; i++){
         if(strcmp(varTable.pairs[i]->name, name) == 0)
             return varTable.pairs[i];
@@ -219,7 +216,6 @@ NameTypePair* lookupVar(char* name){
 }
 
 void doublePairsAllocation(VARtable* table){
-    printf("doublePairsAllocation()\n");
     if(table->maxsize == 0)
         table->maxsize = 5;
     table->pairs = realloc(table->pairs, sizeof(NameTypePair*)*(table->maxsize*2));
@@ -231,7 +227,6 @@ void doublePairsAllocation(VARtable* table){
 }
 
 void doubleChildrenAllocation(ASTnode* node){
-    printf("doubleChildrenAllocation()\n");
     if(node->maxChildren == 0)
         node->maxChildren = 2;
     node->children = realloc(node->children, sizeof(ASTnode*)*(node->maxChildren*2));
@@ -243,7 +238,6 @@ void doubleChildrenAllocation(ASTnode* node){
 }
 
 void addASTnodeChildren(ASTnode* parent, ASTnode** children, int numChildren){
-    printf("addASTnodeChildren()\n");
     int i = 0;
     while(parent->numChildren + numChildren > parent->maxChildren){
         doubleChildrenAllocation(parent);
@@ -278,7 +272,6 @@ ASTnode* create_AST_COMMENT(char* comment){
 }
 
 ASTnode* create_AST_VAR_REF(char* var, ASTnode* arrayIndices){
-    printf("create_AST_VAR_REF() for var %s\n", var);
     ASTnode* output = newASTnode();
     output->nodeType = AST_VAR_REF;
     NameTypePair* pair = lookupVar(var);
@@ -383,11 +376,126 @@ ASTnode* create_AST_BIN_OP(ASTNODETYPE binOpType, ASTnode* a, ASTnode* b){
 void printAST(){
     int i;
     printf("Printed AST:\n");
-    for(i = 0; i < rootNode->numChildren; i++){
-        printf("\tAST type: %d\n", rootNode->children[i]->nodeType);
+    printASTNode(rootNode, 0);
+}
+
+void getTypeStr(VARTYPE varType, char* output){
+    switch(varType){
+        case TYPE_INTEGER:
+            strcpy(output, "Int");
+        break;
+        case TYPE_FLOAT:
+            strcpy(output, "Float");
+        break;
+        case TYPE_BOOLEAN:
+            strcpy(output, "Bool");
+        break;
+        default:
+            strcpy(output, "??");
     }
 }
 
 void printASTNode(ASTnode* node, int tabDepth){
+    int i;
+    char* tabs = calloc(1, sizeof(char)*tabDepth+1);
+    char typeStr[50];
+    for(i = 0; i < tabDepth; i++){
+        tabs[i] = ' ';
+    }
+    switch(node->nodeType){
+        case (AST_PROGRAM):
+                printf("%sAST_PROGRAM\n", tabs);
+                break;
+        case (AST_WHILE):
+        		printf("%sAST_WHILE\n", tabs);
+        		break;
+        case (AST_ASSIGN):
+        		printf("%sAST_ASSIGN\n", tabs);
+        		break;
+        case (AST_TYPEDECL):
+        		printf("%sAST_TYPEDECL\n", tabs);
+        		break;
+        case (AST_DECLLIST):
+        		printf("%sAST_DECLLIST\n", tabs);
+        		break;
+        case (AST_COMMENT):
+        		printf("%sAST_COMMENT\n", tabs);
+        		break;
+        case (AST_IF):
+        		printf("%sAST_IF\n", tabs);
+        		break;
+        case (AST_IFELSE):
+        		printf("%sAST_IFELSE\n", tabs);
+        		break;
+        case (AST_LITERAL):
+                switch(node->varType){
+                    case TYPE_INTEGER: printf("%sAST_LITERAL (%d)\n", tabs, node->ival); break;
+                    case TYPE_FLOAT: printf("%sAST_LITERAL (%f)\n", tabs, node->fval); break;
+                    default: printf("%sAST_LITERAL\n", tabs);
+                }        		
+        		break;
+        case (AST_PLUS):
+        		printf("%sAST_PLUS\n", tabs);
+        		break;
+        case (AST_MINUS):
+        		printf("%sAST_MINUS\n", tabs);
+        		break;
+        case (AST_MULT):
+        		printf("%sAST_MULT\n", tabs);
+        		break;
+        case (AST_DIV):
+        		printf("%sAST_DIV\n", tabs);
+        		break;
+        case (AST_NEG):
+        		printf("%sAST_NEG\n", tabs);
+        		break;
+        case (AST_NOT):
+        		printf("%sAST_NOT\n", tabs);
+        		break;
+        case (AST_NE):
+        		printf("%sAST_NE\n", tabs);
+        		break;
+        case (AST_LE):
+        		printf("%sAST_LE\n", tabs);
+        		break;
+        case (AST_GE):
+        		printf("%sAST_GE\n", tabs);
+        		break;
+        case (AST_LT):
+        		printf("%sAST_LT\n", tabs);
+        		break;
+        case (AST_GT):
+        		printf("%sAST_GT\n", tabs);
+        		break;
+        case (AST_EQ):
+        		printf("%sAST_EQ\n", tabs);
+        		break;
+        case (AST_AND):
+        		printf("%sAST_AND\n", tabs);
+        		break;
+        case (AST_OR):
+        		printf("%sAST_OR\n", tabs);
+        		break;
+        case (AST_VAR_DECL):
+        		printf("%sAST_VAR_DECL\n", tabs);
+        		break;
+        case (AST_VAR_REF):
+                getTypeStr(node->varPair->vartype, typeStr);
+        		printf("%sAST_VAR_REF (\"%s\":%s)\n", tabs, node->varPair->name, typeStr);
+        		break;
+        case (AST_VAR_LIST):
+        		printf("%sAST_VAR_LIST\n", tabs);
+        		break;
+        case (AST_ARRAY_REF):
+        		printf("%sAST_ARRAY_REF\n", tabs);
+        		break;
+        case (AST_ARRAY_INDICES):
+        		printf("%sAST_ARRAY_INDICES\n", tabs);
+        		break;
+    }
 
+    for(i = 0; i < node->numChildren; i++){
+        printASTNode(node->children[i], tabDepth+1);
+    }
+    free(tabs);
 }
