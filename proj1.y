@@ -10,15 +10,16 @@
 %left  MULT DIV
 %right  UMINUS NOT UPLUS
 
-%type <astNode> expr idstmt array vardecl var
+%type <astNode> expr idstmt array vardecl var boolean exprstmt whilestmt start ifstmt
 
 %{
  /* put your c declarations here */
 #define YYDEBUG 1
 
 typedef enum {AST_PROGRAM, AST_WHILE, AST_ASSIGN, AST_TYPEDECL, 
-              AST_DECLLIST, AST_IFELSE, AST_LITERAL, AST_PLUS, 
-              AST_MINUS, AST_MULT, AST_DIV, AST_VAR_DECL, 
+              AST_DECLLIST, AST_IF, AST_IFELSE, AST_LITERAL, AST_PLUS, 
+              AST_MINUS, AST_MULT, AST_DIV, AST_NEG, AST_NOT, AST_NE, AST_LE, AST_GE,
+              AST_LT, AST_GT, AST_EQ, AST_AND, AST_OR, AST_VAR_DECL, 
               AST_VAR_REF, AST_VAR_LIST, AST_ARRAY_REF, AST_ARRAY_INDICES} ASTNODETYPE;
 typedef enum {TYPE_INTEGER, TYPE_FLOAT, TYPE_BOOLEAN} VARTYPE;
 
@@ -65,6 +66,11 @@ ASTnode* create_AST_VAR_LIST(ASTnode*);
 ASTnode* merge_AST_VAR_LIST(ASTnode*, ASTnode*);
 ASTnode* create_AST_ARRAY_INDICES(ASTnode*);
 ASTnode* merge_AST_ARRAY_INDICES(ASTnode*, ASTnode*);
+ASTnode* create_AST_ASSIGN(ASTnode*, ASTnode*);
+ASTnode* create_AST_WHILE(ASTnode*, ASTnode*);
+ASTnode* create_AST_IF(ASTnode*, ASTnode*);
+ASTnode* create_AST_IFELSE(ASTnode*, ASTnode*, ASTnode*);
+ASTnode* create_AST_UNARY_OP(ASTNODETYPE, ASTnode*);
 ASTnode* create_AST_BIN_OP(ASTNODETYPE, ASTnode*, ASTnode*);
 NameTypePair* lookupVar(char*);
 
@@ -89,8 +95,8 @@ stmt:ifstmt
     |exprstmt
     |COMMENT
     ;
-ifstmt:IF LPAREN boolean RPAREN start ELSE start
-    | IF LPAREN boolean RPAREN start
+ifstmt:IF LPAREN boolean RPAREN start ELSE start { $$ = create_AST_IFELSE($3, $5, $7);}
+    | IF LPAREN boolean RPAREN start { $$ = create_AST_IF($3, $5);}
     ;
 vardecl:INT var SEMICOLON { $$ = registerVars($2, INT);}
     |FLOAT var SEMICOLON { $$ = registerVars($2, FLOAT);}
@@ -98,32 +104,32 @@ vardecl:INT var SEMICOLON { $$ = registerVars($2, INT);}
 var:    idstmt { $$ = create_AST_VAR_LIST($1);}
     |idstmt COMMA var { $$ = merge_AST_VAR_LIST(create_AST_VAR_LIST($1), $3);}
     ;
-whilestmt:WHILE LPAREN boolean RPAREN start
+whilestmt:WHILE LPAREN boolean RPAREN start { $$ = create_AST_WHILE($3, $5);}
     ;
-exprstmt:idstmt ASSIGN expr SEMICOLON
+exprstmt:idstmt ASSIGN expr SEMICOLON { $$ = create_AST_ASSIGN($1, $3);}
     ;
-boolean:NOT boolean
-    |LPAREN boolean RPAREN
-    |boolean NE boolean
-    |boolean LT boolean
-    |boolean LE boolean
-    |boolean GT boolean
-    |boolean GE boolean
-    |boolean AND boolean
-    |boolean OR boolean
-    |boolean EQ boolean
-    |expr
+boolean:NOT boolean { $$ = create_AST_UNARY_OP(AST_NOT, $2);}
+    |LPAREN boolean RPAREN { $$ = $2;}
+    |boolean NE boolean { $$ = create_AST_BIN_OP(AST_NE, $1, $3);}
+    |boolean LT boolean { $$ = create_AST_BIN_OP(AST_LT, $1, $3);}
+    |boolean LE boolean { $$ = create_AST_BIN_OP(AST_LE, $1, $3);}
+    |boolean GT boolean { $$ = create_AST_BIN_OP(AST_GT, $1, $3);}
+    |boolean GE boolean { $$ = create_AST_BIN_OP(AST_GE, $1, $3);}
+    |boolean AND boolean { $$ = create_AST_BIN_OP(AST_AND, $1, $3);}
+    |boolean OR boolean  { $$ = create_AST_BIN_OP(AST_OR, $1, $3);}
+    |boolean EQ boolean { $$ = create_AST_BIN_OP(AST_EQ, $1, $3);}
+    |expr { $$ = $1;}
     ;
 expr:expr PLUS expr { $$ = create_AST_BIN_OP(AST_PLUS, $1, $3);}
     |expr MINUS expr { $$ = create_AST_BIN_OP(AST_MINUS, $1, $3);}
     |expr MULT expr  { $$ = create_AST_BIN_OP(AST_MULT, $1, $3);}
     |expr DIV expr  { $$ = create_AST_BIN_OP(AST_DIV, $1, $3);}
     |LPAREN expr RPAREN { $$ = $2;}
-    |MINUS expr %prec UMINUS { $$ = $2;}
+    |MINUS expr %prec UMINUS  { $$ = create_AST_UNARY_OP(AST_NEG, $2);}
     |PLUS expr %prec UPLUS { $$ = $2;}
     |ICONST 		{ $$ = create_AST_LITERAL_INT($1);}									
     |FCONST         { $$ = create_AST_LITERAL_FLOAT($1);}   
-    |idstmt
+    |idstmt { $$ = $1;}
     ;
 idstmt:ID  {$$ = create_AST_VAR_REF($1, NULL);}
     | ID array  {$$ = create_AST_VAR_REF($1, $2);}
@@ -300,8 +306,32 @@ ASTnode* merge_AST_ARRAY_INDICES(ASTnode* a, ASTnode* b){
     return a;
 }
 
-ASTnode* create_AST_IFELSE(){
-	
+ASTnode* create_AST_ASSIGN(ASTnode* dest, ASTnode* src){
+    ASTnode* output = newASTnode();
+    output->nodeType = AST_ASSIGN;
+    addASTnodeChildren(output, (ASTnode*[]){dest, src}, 2);
+    return output;
+}
+
+ASTnode* create_AST_WHILE(ASTnode* conditional, ASTnode* body){
+    ASTnode* output = newASTnode();
+    output->nodeType = AST_WHILE;
+    addASTnodeChildren(output, (ASTnode*[]){conditional, body}, 2);
+    return output;
+}
+
+ASTnode* create_AST_IF(ASTnode* conditional, ASTnode* body){
+    ASTnode* output = newASTnode();
+    output->nodeType = AST_IF;
+    addASTnodeChildren(output, (ASTnode*[]){conditional, body}, 2);
+    return output;
+}
+
+ASTnode* create_AST_IFELSE(ASTnode* conditional, ASTnode* thenbody, ASTnode* elsebody){
+	ASTnode* output = newASTnode();
+    output->nodeType = AST_IFELSE;
+    addASTnodeChildren(output, (ASTnode*[]){conditional, thenbody, elsebody}, 3);
+    return output;
 }
 
 ASTnode* create_AST_DECLLIST(){
@@ -312,16 +342,15 @@ ASTnode* create_AST_TYPEDECL(){
 	
 }
 
-ASTnode* create_AST_ASSIGN(){
-	
-}
-
-ASTnode* create_AST_WHILE(){
-	
-}
-
 ASTnode* create_AST_PROGRAM(){
 	
+}
+
+ASTnode* create_AST_UNARY_OP(ASTNODETYPE unaryOpType, ASTnode* a){
+    ASTnode* output = newASTnode();
+    output->nodeType = unaryOpType;
+    addASTnodeChildren(output, (ASTnode*[]){a}, 1);
+    return output;
 }
 
 ASTnode* create_AST_BIN_OP(ASTNODETYPE binOpType, ASTnode* a, ASTnode* b){
