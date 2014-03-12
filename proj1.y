@@ -143,8 +143,11 @@ idstmt:ID  {$$ = create_AST_VAR_REF($1, NULL);}
     ;
 array:LBRACKET ICONST RBRACKET { $$ = create_AST_ARRAY_INDICES(create_AST_LITERAL_INT($2));}
     |LBRACKET ID RBRACKET { $$ = create_AST_ARRAY_INDICES(create_AST_VAR_REF($2, NULL));}
+    |LBRACKET expr RBRACKET { $$ = create_AST_ARRAY_INDICES($2);}
     |LBRACKET ICONST RBRACKET array { $$ = merge_AST_ARRAY_INDICES(create_AST_ARRAY_INDICES(create_AST_LITERAL_INT($2)), $4);}
     |LBRACKET ID RBRACKET array { $$ = merge_AST_ARRAY_INDICES(create_AST_ARRAY_INDICES(create_AST_VAR_REF($2, NULL)), $4);}
+    |LBRACKET expr RBRACKET array { $$ = merge_AST_ARRAY_INDICES(create_AST_ARRAY_INDICES($2), $4);}
+    ;
 %%
     #include "./lex.yy.c"
 
