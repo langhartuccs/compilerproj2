@@ -9,7 +9,7 @@
 %}
 
 %%
-"/*"([^*]|"*"*[^/])*"*"*"*/" { return COMMENT; }
+"/*"([^*]|"*"*[^/])*"*"*"*/" { yylval.sval = strdup(yytext); return COMMENT; }
 "if" { return IF; }
 "else" { return ELSE; }
 "while" { return WHILE; }

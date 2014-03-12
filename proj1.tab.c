@@ -72,7 +72,7 @@
 #define YYDEBUG 1
 
 typedef enum {AST_PROGRAM, AST_WHILE, AST_ASSIGN, AST_TYPEDECL, 
-              AST_DECLLIST, AST_IF, AST_IFELSE, AST_LITERAL, AST_PLUS, 
+              AST_DECLLIST, AST_COMMENT, AST_IF, AST_IFELSE, AST_LITERAL, AST_PLUS, 
               AST_MINUS, AST_MULT, AST_DIV, AST_NEG, AST_NOT, AST_NE, AST_LE, AST_GE,
               AST_LT, AST_GT, AST_EQ, AST_AND, AST_OR, AST_VAR_DECL, 
               AST_VAR_REF, AST_VAR_LIST, AST_ARRAY_REF, AST_ARRAY_INDICES} ASTNODETYPE;
@@ -96,11 +96,13 @@ typedef struct astnodestruct {
     int maxChildren;
     int numChildren;
     int ival;
-    char* varName;
+    char* sval;
     float fval;
+    char* varName;
     struct astnodestruct** children;
 } ASTnode;
 
+ASTnode* rootNode;
 VARtable varTable;
 
 void initialize();
@@ -116,6 +118,7 @@ NameTypePair* newNameTypePair();
 void destroyNameTypePair(NameTypePair*);
 ASTnode* create_AST_LITERAL_INT(int);
 ASTnode* create_AST_LITERAL_FLOAT(float);
+ASTnode* create_AST_COMMENT(char*);
 ASTnode* create_AST_VAR_REF(char*, ASTnode*);
 ASTnode* create_AST_VAR_LIST(ASTnode*);
 ASTnode* merge_AST_VAR_LIST(ASTnode*, ASTnode*);
@@ -125,14 +128,17 @@ ASTnode* create_AST_ASSIGN(ASTnode*, ASTnode*);
 ASTnode* create_AST_WHILE(ASTnode*, ASTnode*);
 ASTnode* create_AST_IF(ASTnode*, ASTnode*);
 ASTnode* create_AST_IFELSE(ASTnode*, ASTnode*, ASTnode*);
+ASTnode* create_AST_PROGRAM(ASTnode*);
+ASTnode* merge_AST_PROGRAMS(ASTnode*, ASTnode*);
 ASTnode* create_AST_UNARY_OP(ASTNODETYPE, ASTnode*);
 ASTnode* create_AST_BIN_OP(ASTNODETYPE, ASTnode*, ASTnode*);
 NameTypePair* lookupVar(char*);
+void printAST();
 
 
 
 /* Line 268 of yacc.c  */
-#line 136 "proj1.tab.c"
+#line 142 "proj1.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -202,7 +208,7 @@ typedef union YYSTYPE
 {
 
 /* Line 293 of yacc.c  */
-#line 79 "proj1.y"
+#line 85 "proj1.y"
 
     float fval;
     int ival;
@@ -212,7 +218,7 @@ typedef union YYSTYPE
 
 
 /* Line 293 of yacc.c  */
-#line 216 "proj1.tab.c"
+#line 222 "proj1.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -224,7 +230,7 @@ typedef union YYSTYPE
 
 
 /* Line 343 of yacc.c  */
-#line 228 "proj1.tab.c"
+#line 234 "proj1.tab.c"
 
 #ifdef short
 # undef short
@@ -533,11 +539,11 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    87,    87,    88,    89,    90,    92,    93,    94,    95,
-      96,    98,    99,   101,   102,   104,   105,   107,   109,   111,
-     112,   113,   114,   115,   116,   117,   118,   119,   120,   121,
-     123,   124,   125,   126,   127,   128,   129,   130,   131,   132,
-     134,   135,   137,   138,   139,   140
+       0,    93,    93,    94,    95,    96,    98,    99,   100,   101,
+     102,   104,   105,   107,   108,   110,   111,   113,   115,   117,
+     118,   119,   120,   121,   122,   123,   124,   125,   126,   127,
+     129,   130,   131,   132,   133,   134,   135,   136,   137,   138,
+     140,   141,   143,   144,   145,   146
 };
 #endif
 
@@ -1526,255 +1532,311 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 11:
+        case 2:
 
 /* Line 1806 of yacc.c  */
-#line 98 "proj1.y"
+#line 93 "proj1.y"
+    { (yyval.astNode) = create_AST_PROGRAM((yyvsp[(1) - (1)].astNode)); rootNode = (yyval.astNode);}
+    break;
+
+  case 3:
+
+/* Line 1806 of yacc.c  */
+#line 94 "proj1.y"
+    { (yyval.astNode) = merge_AST_PROGRAMS(create_AST_PROGRAM((yyvsp[(1) - (2)].astNode)), (yyvsp[(2) - (2)].astNode)); rootNode = (yyval.astNode);}
+    break;
+
+  case 4:
+
+/* Line 1806 of yacc.c  */
+#line 95 "proj1.y"
+    { (yyval.astNode) = (yyvsp[(2) - (3)].astNode); rootNode = (yyval.astNode);}
+    break;
+
+  case 5:
+
+/* Line 1806 of yacc.c  */
+#line 96 "proj1.y"
+    { (yyval.astNode) = merge_AST_PROGRAMS((yyvsp[(2) - (4)].astNode), (yyvsp[(4) - (4)].astNode)); rootNode = (yyval.astNode);}
+    break;
+
+  case 7:
+
+/* Line 1806 of yacc.c  */
+#line 99 "proj1.y"
+    {(yyval.astNode) = (yyvsp[(1) - (1)].astNode);}
+    break;
+
+  case 8:
+
+/* Line 1806 of yacc.c  */
+#line 100 "proj1.y"
+    {(yyval.astNode) = (yyvsp[(1) - (1)].astNode);}
+    break;
+
+  case 9:
+
+/* Line 1806 of yacc.c  */
+#line 101 "proj1.y"
+    {(yyval.astNode) = (yyvsp[(1) - (1)].astNode);}
+    break;
+
+  case 10:
+
+/* Line 1806 of yacc.c  */
+#line 102 "proj1.y"
+    {(yyval.astNode) = create_AST_COMMENT((yyvsp[(1) - (1)].sval));}
+    break;
+
+  case 11:
+
+/* Line 1806 of yacc.c  */
+#line 104 "proj1.y"
     { (yyval.astNode) = create_AST_IFELSE((yyvsp[(3) - (7)].astNode), (yyvsp[(5) - (7)].astNode), (yyvsp[(7) - (7)].astNode));}
     break;
 
   case 12:
 
 /* Line 1806 of yacc.c  */
-#line 99 "proj1.y"
+#line 105 "proj1.y"
     { (yyval.astNode) = create_AST_IF((yyvsp[(3) - (5)].astNode), (yyvsp[(5) - (5)].astNode));}
     break;
 
   case 13:
 
 /* Line 1806 of yacc.c  */
-#line 101 "proj1.y"
+#line 107 "proj1.y"
     { (yyval.astNode) = registerVars((yyvsp[(2) - (3)].astNode), INT);}
     break;
 
   case 14:
 
 /* Line 1806 of yacc.c  */
-#line 102 "proj1.y"
+#line 108 "proj1.y"
     { (yyval.astNode) = registerVars((yyvsp[(2) - (3)].astNode), FLOAT);}
     break;
 
   case 15:
 
 /* Line 1806 of yacc.c  */
-#line 104 "proj1.y"
+#line 110 "proj1.y"
     { (yyval.astNode) = create_AST_VAR_LIST((yyvsp[(1) - (1)].astNode));}
     break;
 
   case 16:
 
 /* Line 1806 of yacc.c  */
-#line 105 "proj1.y"
+#line 111 "proj1.y"
     { (yyval.astNode) = merge_AST_VAR_LIST(create_AST_VAR_LIST((yyvsp[(1) - (3)].astNode)), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 17:
 
 /* Line 1806 of yacc.c  */
-#line 107 "proj1.y"
+#line 113 "proj1.y"
     { (yyval.astNode) = create_AST_WHILE((yyvsp[(3) - (5)].astNode), (yyvsp[(5) - (5)].astNode));}
     break;
 
   case 18:
 
 /* Line 1806 of yacc.c  */
-#line 109 "proj1.y"
+#line 115 "proj1.y"
     { (yyval.astNode) = create_AST_ASSIGN((yyvsp[(1) - (4)].astNode), (yyvsp[(3) - (4)].astNode));}
     break;
 
   case 19:
 
 /* Line 1806 of yacc.c  */
-#line 111 "proj1.y"
+#line 117 "proj1.y"
     { (yyval.astNode) = create_AST_UNARY_OP(AST_NOT, (yyvsp[(2) - (2)].astNode));}
     break;
 
   case 20:
 
 /* Line 1806 of yacc.c  */
-#line 112 "proj1.y"
+#line 118 "proj1.y"
     { (yyval.astNode) = (yyvsp[(2) - (3)].astNode);}
     break;
 
   case 21:
 
 /* Line 1806 of yacc.c  */
-#line 113 "proj1.y"
+#line 119 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_NE, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 22:
 
 /* Line 1806 of yacc.c  */
-#line 114 "proj1.y"
+#line 120 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_LT, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 23:
 
 /* Line 1806 of yacc.c  */
-#line 115 "proj1.y"
+#line 121 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_LE, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 24:
 
 /* Line 1806 of yacc.c  */
-#line 116 "proj1.y"
+#line 122 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_GT, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 25:
 
 /* Line 1806 of yacc.c  */
-#line 117 "proj1.y"
+#line 123 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_GE, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 26:
 
 /* Line 1806 of yacc.c  */
-#line 118 "proj1.y"
+#line 124 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_AND, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 27:
 
 /* Line 1806 of yacc.c  */
-#line 119 "proj1.y"
+#line 125 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_OR, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 28:
 
 /* Line 1806 of yacc.c  */
-#line 120 "proj1.y"
+#line 126 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_EQ, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 29:
 
 /* Line 1806 of yacc.c  */
-#line 121 "proj1.y"
+#line 127 "proj1.y"
     { (yyval.astNode) = (yyvsp[(1) - (1)].astNode);}
     break;
 
   case 30:
 
 /* Line 1806 of yacc.c  */
-#line 123 "proj1.y"
+#line 129 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_PLUS, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 31:
 
 /* Line 1806 of yacc.c  */
-#line 124 "proj1.y"
+#line 130 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_MINUS, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 32:
 
 /* Line 1806 of yacc.c  */
-#line 125 "proj1.y"
+#line 131 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_MULT, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 33:
 
 /* Line 1806 of yacc.c  */
-#line 126 "proj1.y"
+#line 132 "proj1.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_DIV, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 34:
 
 /* Line 1806 of yacc.c  */
-#line 127 "proj1.y"
+#line 133 "proj1.y"
     { (yyval.astNode) = (yyvsp[(2) - (3)].astNode);}
     break;
 
   case 35:
 
 /* Line 1806 of yacc.c  */
-#line 128 "proj1.y"
+#line 134 "proj1.y"
     { (yyval.astNode) = create_AST_UNARY_OP(AST_NEG, (yyvsp[(2) - (2)].astNode));}
     break;
 
   case 36:
 
 /* Line 1806 of yacc.c  */
-#line 129 "proj1.y"
+#line 135 "proj1.y"
     { (yyval.astNode) = (yyvsp[(2) - (2)].astNode);}
     break;
 
   case 37:
 
 /* Line 1806 of yacc.c  */
-#line 130 "proj1.y"
+#line 136 "proj1.y"
     { (yyval.astNode) = create_AST_LITERAL_INT((yyvsp[(1) - (1)].ival));}
     break;
 
   case 38:
 
 /* Line 1806 of yacc.c  */
-#line 131 "proj1.y"
+#line 137 "proj1.y"
     { (yyval.astNode) = create_AST_LITERAL_FLOAT((yyvsp[(1) - (1)].fval));}
     break;
 
   case 39:
 
 /* Line 1806 of yacc.c  */
-#line 132 "proj1.y"
+#line 138 "proj1.y"
     { (yyval.astNode) = (yyvsp[(1) - (1)].astNode);}
     break;
 
   case 40:
 
 /* Line 1806 of yacc.c  */
-#line 134 "proj1.y"
+#line 140 "proj1.y"
     {(yyval.astNode) = create_AST_VAR_REF((yyvsp[(1) - (1)].sval), NULL);}
     break;
 
   case 41:
 
 /* Line 1806 of yacc.c  */
-#line 135 "proj1.y"
+#line 141 "proj1.y"
     {(yyval.astNode) = create_AST_VAR_REF((yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].astNode));}
     break;
 
   case 42:
 
 /* Line 1806 of yacc.c  */
-#line 137 "proj1.y"
+#line 143 "proj1.y"
     { (yyval.astNode) = create_AST_ARRAY_INDICES(create_AST_LITERAL_INT((yyvsp[(2) - (3)].ival)));}
     break;
 
   case 43:
 
 /* Line 1806 of yacc.c  */
-#line 138 "proj1.y"
+#line 144 "proj1.y"
     { (yyval.astNode) = create_AST_ARRAY_INDICES(create_AST_VAR_REF((yyvsp[(2) - (3)].sval), NULL));}
     break;
 
   case 44:
 
 /* Line 1806 of yacc.c  */
-#line 139 "proj1.y"
+#line 145 "proj1.y"
     { (yyval.astNode) = merge_AST_ARRAY_INDICES(create_AST_ARRAY_INDICES(create_AST_LITERAL_INT((yyvsp[(2) - (4)].ival))), (yyvsp[(4) - (4)].astNode));}
     break;
 
   case 45:
 
 /* Line 1806 of yacc.c  */
-#line 140 "proj1.y"
+#line 146 "proj1.y"
     { (yyval.astNode) = merge_AST_ARRAY_INDICES(create_AST_ARRAY_INDICES(create_AST_VAR_REF((yyvsp[(2) - (4)].sval), NULL)), (yyvsp[(4) - (4)].astNode));}
     break;
 
 
 
 /* Line 1806 of yacc.c  */
-#line 1778 "proj1.tab.c"
+#line 1840 "proj1.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2005,7 +2067,7 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 141 "proj1.y"
+#line 147 "proj1.y"
 
     #include "./lex.yy.c"
 
@@ -2013,6 +2075,7 @@ yyreturn:
 
 void initialize(){
     printf("Initializing global variables\n");
+    rootNode = NULL;
     memset(&varTable, 0, sizeof(VARtable));
 }
 
@@ -2039,9 +2102,6 @@ void destroyNameTypePair(NameTypePair* pair){
 ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
     int i;
     printf("registerVars()\n");
-    if(vars->nodeType != AST_VAR_LIST){
-        printf("NOT AST_VAR_LIST! %d %d\n", AST_VAR_LIST, vars->nodeType);
-    }
     ASTnode* output = newASTnode();
     output->nodeType = AST_VAR_DECL;
     for(i = 0; i < vars->numChildren; i++){
@@ -2054,7 +2114,6 @@ ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
         child->varType = vartype;
     }
     output->varType = vartype;
-    printf("Registered vars\n");
     return output;
 }
 
@@ -2134,6 +2193,13 @@ ASTnode* create_AST_LITERAL_FLOAT(float value){
     return output;
 }
 
+ASTnode* create_AST_COMMENT(char* comment){
+    ASTnode* output = newASTnode();
+    output->nodeType = AST_COMMENT;
+    output->sval = comment;
+    return output;
+}
+
 ASTnode* create_AST_VAR_REF(char* var, ASTnode* arrayIndices){
     printf("create_AST_VAR_REF() for var %s\n", var);
     ASTnode* output = newASTnode();
@@ -2202,15 +2268,24 @@ ASTnode* create_AST_IFELSE(ASTnode* conditional, ASTnode* thenbody, ASTnode* els
     return output;
 }
 
+ASTnode* create_AST_PROGRAM(ASTnode* stmt){
+    ASTnode* output = newASTnode();
+    output->nodeType = AST_PROGRAM;
+    addASTnodeChildren(output, (ASTnode*[]){stmt}, 1);
+    return output;
+}
+
+ASTnode* merge_AST_PROGRAMS(ASTnode* a, ASTnode* b){
+    addASTnodeChildren(a, b->children, b->numChildren);
+    destroyASTnode(b);
+    return a;
+}
+
 ASTnode* create_AST_DECLLIST(){
 	
 }
 
 ASTnode* create_AST_TYPEDECL(){
-	
-}
-
-ASTnode* create_AST_PROGRAM(){
 	
 }
 
@@ -2226,4 +2301,12 @@ ASTnode* create_AST_BIN_OP(ASTNODETYPE binOpType, ASTnode* a, ASTnode* b){
     output->nodeType = binOpType;
     addASTnodeChildren(output, (ASTnode*[]){a, b}, 2);
     return output;
+}
+
+void printAST(){
+    int i;
+    printf("Printed AST:\n");
+    for(i = 0; i < rootNode->numChildren; i++){
+        printf("\tAST type: %d\n", rootNode->children[i]->nodeType);
+    }
 }

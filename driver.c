@@ -15,7 +15,7 @@ extern void yyerror(const char* msg)
   exit(1);
 }
 extern void initialize();
-
+extern void printAST();
 
 int main(int argc, char** argv)
 {
@@ -27,7 +27,8 @@ int main(int argc, char** argv)
   yyin = stdin;
   yydebug=0;
   yyparse();
-  printf("Successful Parse\n");
+  printf("Successful Parse\n\n");
+  printAST();
   return 0;
 }
 

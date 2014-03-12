@@ -1,7 +1,7 @@
 
-
-%token  COMMENT IF ELSE WHILE INT FLOAT
-%token <sval> ID
+%token <sval> COMMENT
+%token IF ELSE WHILE INT FLOAT
+%token <sval> ID 
 %token <ival> ICONST
 %token <fval> FCONST
 %token  LPAREN RPAREN LBRACE RBRACE ASSIGN SEMICOLON COMMA LBRACKET RBRACKET
@@ -10,14 +10,14 @@
 %left  MULT DIV
 %right  UMINUS NOT UPLUS
 
-%type <astNode> expr idstmt array vardecl var boolean exprstmt whilestmt start ifstmt
+%type <astNode> expr idstmt array vardecl var boolean exprstmt whilestmt start ifstmt stmt
 
 %{
  /* put your c declarations here */
 #define YYDEBUG 1
 
 typedef enum {AST_PROGRAM, AST_WHILE, AST_ASSIGN, AST_TYPEDECL, 
-              AST_DECLLIST, AST_IF, AST_IFELSE, AST_LITERAL, AST_PLUS, 
+              AST_DECLLIST, AST_COMMENT, AST_IF, AST_IFELSE, AST_LITERAL, AST_PLUS, 
               AST_MINUS, AST_MULT, AST_DIV, AST_NEG, AST_NOT, AST_NE, AST_LE, AST_GE,
               AST_LT, AST_GT, AST_EQ, AST_AND, AST_OR, AST_VAR_DECL, 
               AST_VAR_REF, AST_VAR_LIST, AST_ARRAY_REF, AST_ARRAY_INDICES} ASTNODETYPE;
@@ -41,11 +41,13 @@ typedef struct astnodestruct {
     int maxChildren;
     int numChildren;
     int ival;
-    char* varName;
+    char* sval;
     float fval;
+    char* varName;
     struct astnodestruct** children;
 } ASTnode;
 
+ASTnode* rootNode;
 VARtable varTable;
 
 void initialize();
@@ -61,6 +63,7 @@ NameTypePair* newNameTypePair();
 void destroyNameTypePair(NameTypePair*);
 ASTnode* create_AST_LITERAL_INT(int);
 ASTnode* create_AST_LITERAL_FLOAT(float);
+ASTnode* create_AST_COMMENT(char*);
 ASTnode* create_AST_VAR_REF(char*, ASTnode*);
 ASTnode* create_AST_VAR_LIST(ASTnode*);
 ASTnode* merge_AST_VAR_LIST(ASTnode*, ASTnode*);
@@ -70,9 +73,13 @@ ASTnode* create_AST_ASSIGN(ASTnode*, ASTnode*);
 ASTnode* create_AST_WHILE(ASTnode*, ASTnode*);
 ASTnode* create_AST_IF(ASTnode*, ASTnode*);
 ASTnode* create_AST_IFELSE(ASTnode*, ASTnode*, ASTnode*);
+ASTnode* create_AST_PROGRAM(ASTnode*);
+ASTnode* merge_AST_PROGRAMS(ASTnode*, ASTnode*);
 ASTnode* create_AST_UNARY_OP(ASTNODETYPE, ASTnode*);
 ASTnode* create_AST_BIN_OP(ASTNODETYPE, ASTnode*, ASTnode*);
 NameTypePair* lookupVar(char*);
+void printAST();
+void printASTNode(ASTnode*, int);
 
 %}
 
@@ -84,16 +91,16 @@ NameTypePair* lookupVar(char*);
 }
 
 %%
-start:stmt
-    |stmt start
-    |LBRACE start RBRACE
-    |LBRACE start RBRACE start
+start:stmt { $$ = create_AST_PROGRAM($1); rootNode = $$;}
+    |stmt start { $$ = merge_AST_PROGRAMS(create_AST_PROGRAM($1), $2); rootNode = $$;}
+    |LBRACE start RBRACE { $$ = $2; rootNode = $$;}
+    |LBRACE start RBRACE start { $$ = merge_AST_PROGRAMS($2, $4); rootNode = $$;}
     ;
 stmt:ifstmt
-    |vardecl
-    |whilestmt
-    |exprstmt
-    |COMMENT
+    |vardecl {$$ = $1;}
+    |whilestmt {$$ = $1;}
+    |exprstmt {$$ = $1;}
+    |COMMENT {$$ = create_AST_COMMENT($1);}
     ;
 ifstmt:IF LPAREN boolean RPAREN start ELSE start { $$ = create_AST_IFELSE($3, $5, $7);}
     | IF LPAREN boolean RPAREN start { $$ = create_AST_IF($3, $5);}
@@ -145,6 +152,7 @@ array:LBRACKET ICONST RBRACKET { $$ = create_AST_ARRAY_INDICES(create_AST_LITERA
 
 void initialize(){
     printf("Initializing global variables\n");
+    rootNode = NULL;
     memset(&varTable, 0, sizeof(VARtable));
 }
 
@@ -171,9 +179,6 @@ void destroyNameTypePair(NameTypePair* pair){
 ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
     int i;
     printf("registerVars()\n");
-    if(vars->nodeType != AST_VAR_LIST){
-        printf("NOT AST_VAR_LIST! %d %d\n", AST_VAR_LIST, vars->nodeType);
-    }
     ASTnode* output = newASTnode();
     output->nodeType = AST_VAR_DECL;
     for(i = 0; i < vars->numChildren; i++){
@@ -186,7 +191,6 @@ ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
         child->varType = vartype;
     }
     output->varType = vartype;
-    printf("Registered vars\n");
     return output;
 }
 
@@ -266,6 +270,13 @@ ASTnode* create_AST_LITERAL_FLOAT(float value){
     return output;
 }
 
+ASTnode* create_AST_COMMENT(char* comment){
+    ASTnode* output = newASTnode();
+    output->nodeType = AST_COMMENT;
+    output->sval = comment;
+    return output;
+}
+
 ASTnode* create_AST_VAR_REF(char* var, ASTnode* arrayIndices){
     printf("create_AST_VAR_REF() for var %s\n", var);
     ASTnode* output = newASTnode();
@@ -334,15 +345,24 @@ ASTnode* create_AST_IFELSE(ASTnode* conditional, ASTnode* thenbody, ASTnode* els
     return output;
 }
 
+ASTnode* create_AST_PROGRAM(ASTnode* stmt){
+    ASTnode* output = newASTnode();
+    output->nodeType = AST_PROGRAM;
+    addASTnodeChildren(output, (ASTnode*[]){stmt}, 1);
+    return output;
+}
+
+ASTnode* merge_AST_PROGRAMS(ASTnode* a, ASTnode* b){
+    addASTnodeChildren(a, b->children, b->numChildren);
+    destroyASTnode(b);
+    return a;
+}
+
 ASTnode* create_AST_DECLLIST(){
 	
 }
 
 ASTnode* create_AST_TYPEDECL(){
-	
-}
-
-ASTnode* create_AST_PROGRAM(){
 	
 }
 
@@ -358,4 +378,16 @@ ASTnode* create_AST_BIN_OP(ASTNODETYPE binOpType, ASTnode* a, ASTnode* b){
     output->nodeType = binOpType;
     addASTnodeChildren(output, (ASTnode*[]){a, b}, 2);
     return output;
+}
+
+void printAST(){
+    int i;
+    printf("Printed AST:\n");
+    for(i = 0; i < rootNode->numChildren; i++){
+        printf("\tAST type: %d\n", rootNode->children[i]->nodeType);
+    }
+}
+
+void printASTNode(ASTnode* node, int tabDepth){
+
 }
