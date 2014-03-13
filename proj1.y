@@ -16,6 +16,24 @@
  /* put your c declarations here */
 #define YYDEBUG 1
 
+<<<<<<< HEAD
+typedef enum {PROGRAM, WHILE, ASSIGN, TYPEDECL, DECLLIST, IFELSE, LITERAL} ASTNODETYPE;
+typedef enum {INTEGER, FLOAT, BOOLEAN} VARTYPE;
+
+
+
+class ASTnode {
+ 	public:
+	ASTNODETYPE nodeType;
+	VARTYPE varType;
+	vector<ASTnode*> children;
+}
+
+ASTnode registerVar(char* name, VARTYPE vartype);
+ASTnode registerVar(string name, VARTYPE vartype);
+
+map<char* name, VARTYPE vartype> varTable();
+=======
 typedef enum {AST_PROGRAM, AST_WHILE, AST_ASSIGN, AST_TYPEDECL, 
               AST_DECLLIST, AST_COMMENT, AST_IF, AST_IFELSE, AST_LITERAL, AST_PLUS, 
               AST_MINUS, AST_MULT, AST_DIV, AST_NEG, AST_NOT, AST_NE, AST_LE, AST_GE,
@@ -81,6 +99,7 @@ ASTnode* create_AST_BIN_OP(ASTNODETYPE, ASTnode*, ASTnode*);
 NameTypePair* lookupVar(char*);
 void printAST();
 void printASTNode(ASTnode*, int);
+>>>>>>> ecba946bada00060b463789e0bc58fe75635d82c
 
 %}
 
@@ -152,6 +171,20 @@ array:LBRACKET ICONST RBRACKET { $$ = create_AST_ARRAY_INDICES(create_AST_LITERA
 %%
     #include "./lex.yy.c"
 
+<<<<<<< HEAD
+    ASTnode registerVar(char* name, VARTYPE vartype){
+    	return registerVar(string(name), vartype);
+    }
+
+    ASTnode registerVar(string name, VARTYPE vartype){
+    	varTable[name] = vartype;
+    	ASTnode output;
+    	output.nodeType = LITERAL;
+    	output.varType = vartype;
+    	return output;
+    }
+
+=======
 
 
 void initialize(){
@@ -528,3 +561,4 @@ void printASTNode(ASTnode* node, int tabDepth){
     }
     free(tabs);
 }
+>>>>>>> ecba946bada00060b463789e0bc58fe75635d82c
