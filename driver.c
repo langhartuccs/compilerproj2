@@ -14,7 +14,8 @@ extern void yyerror(const char* msg)
   fprintf(stderr, "Line %d : %s : %s \n",yylineno,msg, yytext);
   exit(1);
 }
-
+extern void initialize();
+extern void printAST();
 
 int main(int argc, char** argv)
 {
@@ -22,10 +23,12 @@ int main(int argc, char** argv)
      fprintf(stderr, "Usage : %s  < inputfile\n", argv[0]);
      exit(1);
   }
+  initialize();
   yyin = stdin;
-  yydebug=1;
+  yydebug=0;
   yyparse();
-  printf("Successful Parse");
+  printf("Successful Parse\n\n");
+  printAST();
   return 0;
 }
 

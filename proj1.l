@@ -9,7 +9,7 @@
 %}
 
 %%
-"/*"([^*]|"*"*[^/])*"*"*"*/" { return COMMENT; }
+"/*"([^*]|"*"*[^/])*"*"*"*/" { yylval.sval = strdup(yytext); return COMMENT; }
 "if" { return IF; }
 "else" { return ELSE; }
 "while" { return WHILE; }
@@ -37,7 +37,7 @@
 "," { return COMMA; }
 "&&" { return AND; }
 "||" { return OR; }
-[A-Za-z]+[A-Za-z_0-9]* { return ID; }
-[0-9]+"."[0-9]* { return FCONST; }
-[0-9]+ { return ICONST; }
+[A-Za-z]+[A-Za-z0-9_]* { yylval.sval = strdup(yytext); return ID; }
+[0-9]+"."[0-9]* { yylval.fval = strtof(yytext, NULL); return FCONST; }
+[0-9]+ { yylval.ival = atoi(yytext); return ICONST; }
 [ \t\n\r]+  /*ignores whitespace*/
