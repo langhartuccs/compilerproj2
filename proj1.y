@@ -61,6 +61,7 @@ ASTnode* newASTnode();
 void destroyASTnode(ASTnode*);
 NameTypePair* newNameTypePair();
 void destroyNameTypePair(NameTypePair*);
+void typeCheckVarRefs(ASTnode*);
 ASTnode* create_AST_LITERAL_INT(int);
 ASTnode* create_AST_LITERAL_FLOAT(float);
 ASTnode* create_AST_COMMENT(char*);
@@ -97,9 +98,9 @@ start:stmt { $$ = create_AST_PROGRAM($1); rootNode = $$;}
     |LBRACE start RBRACE start { $$ = merge_AST_PROGRAMS($2, $4); rootNode = $$;}
     ;
 stmt:ifstmt
-    |vardecl {$$ = $1;}
-    |whilestmt {$$ = $1;}
-    |exprstmt {$$ = $1;}
+    |vardecl { typeCheckVarRefs($1); $$ = $1;}
+    |whilestmt { typeCheckVarRefs($1); $$ = $1;}
+    |exprstmt { typeCheckVarRefs($1); $$ = $1;}
     |COMMENT {$$ = create_AST_COMMENT($1);}
     ;
 ifstmt:IF LPAREN boolean RPAREN start ELSE start { $$ = create_AST_IFELSE($3, $5, $7);}
@@ -186,7 +187,7 @@ ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
     for(i = 0; i < vars->numChildren; i++){
         ASTnode* child = vars->children[i];
         if(lookupVar(child->varName) != NULL){
-            printf("Variable already registered!");
+            yyerror("Error: Variable already declared!");
             //TODO throw error
         }
         child->varPair = registerVar(child->varName, vartype);
@@ -251,6 +252,20 @@ void addASTnodeChildren(ASTnode* parent, ASTnode** children, int numChildren){
     }
 }
 
+void typeCheckVarRefs(ASTnode* node){
+    int i;
+    switch(node->nodeType){
+        case AST_VAR_REF:
+            if(node->varPair == NULL){
+                yyerror("ERROR!! VARIABLE NOT DECLARED!\n");
+            }
+        break;
+    }
+    for(i = 0; i < node->numChildren; i++){
+        typeCheckVarRefs(node->children[i]);
+    }
+}
+
 ASTnode* create_AST_LITERAL_INT(int value){
 	ASTnode* output = newASTnode();
     output->nodeType = AST_LITERAL;
@@ -278,10 +293,10 @@ ASTnode* create_AST_VAR_REF(char* var, ASTnode* arrayIndices){
     ASTnode* output = newASTnode();
     output->nodeType = AST_VAR_REF;
     NameTypePair* pair = lookupVar(var);
-    if(pair == NULL)
-        printf("Var %s not registered\n", var);
     output->varPair = pair;
     output->varName = var;
+    if(pair != NULL)
+        output->varType = pair->vartype;
     if(arrayIndices != NULL)
         output = merge_AST_ARRAY_INDICES(output, arrayIndices);
     return output;
@@ -304,6 +319,9 @@ ASTnode* create_AST_ARRAY_INDICES(ASTnode* idNode){
     ASTnode* output = newASTnode();
     output->nodeType = AST_ARRAY_INDICES;
     addASTnodeChildren(output, (ASTnode*[]){idNode}, 1);
+    if(idNode->varType != TYPE_INTEGER){
+        yyerror("Array indices must evaluate to integers");
+    }
     return output;
 }
 
@@ -317,6 +335,10 @@ ASTnode* create_AST_ASSIGN(ASTnode* dest, ASTnode* src){
     ASTnode* output = newASTnode();
     output->nodeType = AST_ASSIGN;
     addASTnodeChildren(output, (ASTnode*[]){dest, src}, 2);
+    if(dest->varType != src->varType){
+        yyerror("Type mismatch");
+    }
+    output->varType = dest->varType;
     return output;
 }
 
@@ -366,12 +388,16 @@ ASTnode* create_AST_UNARY_OP(ASTNODETYPE unaryOpType, ASTnode* a){
     ASTnode* output = newASTnode();
     output->nodeType = unaryOpType;
     addASTnodeChildren(output, (ASTnode*[]){a}, 1);
+    output->varType = a->varType;
     return output;
 }
 
 ASTnode* create_AST_BIN_OP(ASTNODETYPE binOpType, ASTnode* a, ASTnode* b){
     ASTnode* output = newASTnode();
     output->nodeType = binOpType;
+    if(a->varType != b->varType)
+        yyerror("Type mismatch");
+    output->varType = a->varType;
     addASTnodeChildren(output, (ASTnode*[]){a, b}, 2);
     return output;
 }
