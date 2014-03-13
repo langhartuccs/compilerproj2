@@ -8,6 +8,24 @@
 %{
  /* put your c declarations here */
 #define YYDEBUG 1
+
+typedef enum {PROGRAM, WHILE, ASSIGN, TYPEDECL, DECLLIST, IFELSE, LITERAL} ASTNODETYPE;
+typedef enum {INTEGER, FLOAT, BOOLEAN} VARTYPE;
+
+
+
+class ASTnode {
+ 	public:
+	ASTNODETYPE nodeType;
+	VARTYPE varType;
+	vector<ASTnode*> children;
+}
+
+ASTnode registerVar(char* name, VARTYPE vartype);
+ASTnode registerVar(string name, VARTYPE vartype);
+
+map<char* name, VARTYPE vartype> varTable();
+
 %}
 
 %%
@@ -67,4 +85,16 @@ array:LBRACKET ICONST RBRACKET
 	|LBRACKET ID RBRACKET array
 %%
     #include "./lex.yy.c"
+
+    ASTnode registerVar(char* name, VARTYPE vartype){
+    	return registerVar(string(name), vartype);
+    }
+
+    ASTnode registerVar(string name, VARTYPE vartype){
+    	varTable[name] = vartype;
+    	ASTnode output;
+    	output.nodeType = LITERAL;
+    	output.varType = vartype;
+    	return output;
+    }
 
