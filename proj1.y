@@ -29,10 +29,11 @@ typedef struct {
     int maxPointerDepth;
 } NameTypePair;
 
-typedef struct {
+typedef struct vartable{
     int maxsize;
     int currentsize;
     NameTypePair** pairs;
+    struct vartable* parent;
 } VARtable;
 
 typedef struct astnodestruct {
@@ -51,7 +52,7 @@ typedef struct astnodestruct {
 } ASTnode;
 
 ASTnode* rootNode;
-VARtable varTable;
+VARtable* varTable;
 
 void initialize();
 ASTnode* registerVars(ASTnode*, VARTYPE);
@@ -160,7 +161,7 @@ array:LBRACKET ICONST RBRACKET { $$ = create_AST_ARRAY_INDICES(create_AST_LITERA
 void initialize(){
     printf("Initializing global variables\n");
     rootNode = NULL;
-    memset(&varTable, 0, sizeof(VARtable));
+    varTable = calloc(1, sizeof(VARtable));
 }
 
 ASTnode* newASTnode(){
@@ -203,23 +204,23 @@ ASTnode* registerVars(ASTnode* vars, VARTYPE vartype){
 }
 
 NameTypePair* registerVar(char* name, VARTYPE vartype, int maxPointerDepth){
-    if(varTable.currentsize == varTable.maxsize)
-        doublePairsAllocation(&varTable);
+    if(varTable->currentsize == varTable->maxsize)
+        doublePairsAllocation(varTable);
 
     NameTypePair* pair = newNameTypePair();
     pair->name = name;
     pair->vartype = vartype;
     pair->maxPointerDepth = maxPointerDepth;
-    varTable.pairs[varTable.currentsize++] = pair;
+    varTable->pairs[varTable->currentsize++] = pair;
     
     return pair;
 }
 
 NameTypePair* lookupVar(char* name){
     int i;
-    for(i = 0; i < varTable.currentsize; i++){
-        if(strcmp(varTable.pairs[i]->name, name) == 0)
-            return varTable.pairs[i];
+    for(i = 0; i < varTable->currentsize; i++){
+        if(strcmp(varTable->pairs[i]->name, name) == 0)
+            return varTable->pairs[i];
     }
     return NULL;
 }
