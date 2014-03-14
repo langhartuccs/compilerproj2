@@ -55,12 +55,16 @@ ASTnode* rootNode;
 VARtable* varTable;
 
 void initialize();
+void pushScope();
+void popScope();
 ASTnode* registerVars(ASTnode*, VARTYPE);
 NameTypePair* registerVar(char*, VARTYPE, int);
 void doublePairsAllocation(VARtable*);
 void doubleChildrenAllocation(ASTnode*);
 void addASTnodeChildren(ASTnode*, ASTnode**, int);
 
+VARtable* newVarTable();
+void destroyVarTable(VARtable*);
 ASTnode* newASTnode();
 void destroyASTnode(ASTnode*);
 NameTypePair* newNameTypePair();
@@ -83,6 +87,7 @@ ASTnode* merge_AST_PROGRAMS(ASTnode*, ASTnode*);
 ASTnode* create_AST_UNARY_OP(ASTNODETYPE, ASTnode*);
 ASTnode* create_AST_BIN_OP(ASTNODETYPE, ASTnode*, ASTnode*);
 NameTypePair* lookupVar(char*);
+NameTypePair* lookupVarRecursive(VARtable*, char*);
 void printAST();
 void printASTNode(ASTnode*, int);
 
@@ -101,14 +106,14 @@ start:stmt { $$ = create_AST_PROGRAM($1); rootNode = $$;}
     |LBRACE start RBRACE { $$ = $2; rootNode = $$;}
     |LBRACE start RBRACE start { $$ = merge_AST_PROGRAMS($2, $4); rootNode = $$;}
     ;
-stmt:ifstmt
+stmt:  ifstmt { verifyVarsAreDeclared($1); $$ = $1;} 
     |vardecl { verifyVarsAreDeclared($1); $$ = $1;}
-    |whilestmt { verifyVarsAreDeclared($1); $$ = $1;}
-    |exprstmt { verifyVarsAreDeclared($1); $$ = $1;}
+    | whilestmt { verifyVarsAreDeclared($1); $$ = $1; }
+    | exprstmt { verifyVarsAreDeclared($1); $$ = $1;}
     |COMMENT {$$ = create_AST_COMMENT($1);}
     ;
-ifstmt:IF LPAREN boolean RPAREN start ELSE start { $$ = create_AST_IFELSE($3, $5, $7);}
-    | IF LPAREN boolean RPAREN start { $$ = create_AST_IF($3, $5);}
+ifstmt:  IF pushscope LPAREN boolean RPAREN start ELSE start { $$ = create_AST_IFELSE($4, $6, $8); popScope();}
+    |  IF pushscope LPAREN boolean RPAREN start { $$ = create_AST_IF($4, $6); popScope();}
     ;
 vardecl:INT var SEMICOLON { $$ = registerVars($2, TYPE_INTEGER);}
     |FLOAT var SEMICOLON { $$ = registerVars($2, TYPE_FLOAT);}
@@ -116,7 +121,7 @@ vardecl:INT var SEMICOLON { $$ = registerVars($2, TYPE_INTEGER);}
 var:    idstmt { $$ = create_AST_VAR_LIST($1);}
     |idstmt COMMA var { $$ = merge_AST_VAR_LIST(create_AST_VAR_LIST($1), $3);}
     ;
-whilestmt:WHILE LPAREN boolean RPAREN start { $$ = create_AST_WHILE($3, $5);}
+whilestmt:  WHILE pushscope LPAREN boolean RPAREN start { $$ = create_AST_WHILE($4, $6); popScope();}
     ;
 exprstmt:idstmt ASSIGN expr SEMICOLON { $$ = create_AST_ASSIGN($1, $3);}
     ;
@@ -153,6 +158,8 @@ array:LBRACKET ICONST RBRACKET { $$ = create_AST_ARRAY_INDICES(create_AST_LITERA
     |LBRACKET ID RBRACKET array { $$ = merge_AST_ARRAY_INDICES(create_AST_ARRAY_INDICES(create_AST_VAR_REF($2, NULL)), $4);}
     |LBRACKET expr RBRACKET array { $$ = merge_AST_ARRAY_INDICES(create_AST_ARRAY_INDICES($2), $4);}
     ;
+pushscope:  {pushScope();};
+popscope:  {popScope();};
 %%
     #include "./lex.yy.c"
 
@@ -161,7 +168,30 @@ array:LBRACKET ICONST RBRACKET { $$ = create_AST_ARRAY_INDICES(create_AST_LITERA
 void initialize(){
     printf("Initializing global variables\n");
     rootNode = NULL;
-    varTable = calloc(1, sizeof(VARtable));
+    varTable = newVarTable();
+}
+
+void pushScope(){
+    printf("Pushing scope\n");
+    VARtable* newTable = newVarTable();
+    newTable->parent = varTable;
+    varTable = newTable;
+}
+
+void popScope(){
+    printf("Popping scope\n");
+    VARtable* tmp = varTable;
+    varTable = varTable->parent;
+    destroyVarTable(tmp);
+}
+
+VARtable* newVarTable(){
+    return calloc(1, sizeof(VARtable));
+}
+
+void destroyVarTable(VARtable* table){
+    if(table != NULL)
+        free(table);
 }
 
 ASTnode* newASTnode(){
@@ -217,11 +247,17 @@ NameTypePair* registerVar(char* name, VARTYPE vartype, int maxPointerDepth){
 }
 
 NameTypePair* lookupVar(char* name){
+    lookupVarRecursive(varTable, name);
+}
+
+NameTypePair* lookupVarRecursive(VARtable* table, char* name){
     int i;
-    for(i = 0; i < varTable->currentsize; i++){
-        if(strcmp(varTable->pairs[i]->name, name) == 0)
-            return varTable->pairs[i];
+    for(i = 0; i < table->currentsize; i++){
+        if(strcmp(table->pairs[i]->name, name) == 0)
+            return table->pairs[i];
     }
+    if(table->parent != NULL)
+        return lookupVarRecursive(table->parent, name);
     return NULL;
 }
 
