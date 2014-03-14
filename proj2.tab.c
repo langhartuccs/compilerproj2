@@ -66,7 +66,7 @@
 /* Copy the first part of user declarations.  */
 
 /* Line 268 of yacc.c  */
-#line 15 "proj1.y"
+#line 15 "proj2.y"
 
 
  /* Alex Langhart */
@@ -150,7 +150,7 @@ void printASTNode(ASTnode*, int);
 
 
 /* Line 268 of yacc.c  */
-#line 154 "proj1.tab.c"
+#line 154 "proj2.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -220,7 +220,7 @@ typedef union YYSTYPE
 {
 
 /* Line 293 of yacc.c  */
-#line 97 "proj1.y"
+#line 97 "proj2.y"
 
     float fval;
     int ival;
@@ -230,7 +230,7 @@ typedef union YYSTYPE
 
 
 /* Line 293 of yacc.c  */
-#line 234 "proj1.tab.c"
+#line 234 "proj2.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -242,7 +242,7 @@ typedef union YYSTYPE
 
 
 /* Line 343 of yacc.c  */
-#line 246 "proj1.tab.c"
+#line 246 "proj2.tab.c"
 
 #ifdef short
 # undef short
@@ -1556,343 +1556,343 @@ yyreduce:
         case 2:
 
 /* Line 1806 of yacc.c  */
-#line 105 "proj1.y"
+#line 105 "proj2.y"
     { (yyval.astNode) = create_AST_PROGRAM((yyvsp[(1) - (1)].astNode)); rootNode = (yyval.astNode);}
     break;
 
   case 3:
 
 /* Line 1806 of yacc.c  */
-#line 106 "proj1.y"
+#line 106 "proj2.y"
     { (yyval.astNode) = merge_AST_PROGRAMS(create_AST_PROGRAM((yyvsp[(1) - (2)].astNode)), (yyvsp[(2) - (2)].astNode)); rootNode = (yyval.astNode);}
     break;
 
   case 4:
 
 /* Line 1806 of yacc.c  */
-#line 107 "proj1.y"
+#line 107 "proj2.y"
     { (yyval.astNode) = (yyvsp[(3) - (5)].astNode); rootNode = (yyval.astNode);}
     break;
 
   case 5:
 
 /* Line 1806 of yacc.c  */
-#line 108 "proj1.y"
+#line 108 "proj2.y"
     { (yyval.astNode) = merge_AST_PROGRAMS((yyvsp[(3) - (8)].astNode), (yyvsp[(7) - (8)].astNode)); rootNode = (yyval.astNode);}
     break;
 
   case 6:
 
 /* Line 1806 of yacc.c  */
-#line 110 "proj1.y"
+#line 110 "proj2.y"
     { verifyVarsAreDeclared((yyvsp[(1) - (1)].astNode)); (yyval.astNode) = (yyvsp[(1) - (1)].astNode);}
     break;
 
   case 7:
 
 /* Line 1806 of yacc.c  */
-#line 111 "proj1.y"
+#line 111 "proj2.y"
     { verifyVarsAreDeclared((yyvsp[(1) - (1)].astNode)); (yyval.astNode) = (yyvsp[(1) - (1)].astNode);}
     break;
 
   case 8:
 
 /* Line 1806 of yacc.c  */
-#line 112 "proj1.y"
+#line 112 "proj2.y"
     { verifyVarsAreDeclared((yyvsp[(1) - (1)].astNode)); (yyval.astNode) = (yyvsp[(1) - (1)].astNode); }
     break;
 
   case 9:
 
 /* Line 1806 of yacc.c  */
-#line 113 "proj1.y"
+#line 113 "proj2.y"
     { verifyVarsAreDeclared((yyvsp[(1) - (1)].astNode)); (yyval.astNode) = (yyvsp[(1) - (1)].astNode);}
     break;
 
   case 10:
 
 /* Line 1806 of yacc.c  */
-#line 114 "proj1.y"
+#line 114 "proj2.y"
     {(yyval.astNode) = create_AST_COMMENT((yyvsp[(1) - (1)].sval));}
     break;
 
   case 11:
 
 /* Line 1806 of yacc.c  */
-#line 116 "proj1.y"
+#line 116 "proj2.y"
     { (yyval.astNode) = create_AST_IFELSE((yyvsp[(3) - (10)].astNode), (yyvsp[(6) - (10)].astNode), (yyvsp[(10) - (10)].astNode)); popScope();}
     break;
 
   case 12:
 
 /* Line 1806 of yacc.c  */
-#line 117 "proj1.y"
+#line 117 "proj2.y"
     { (yyval.astNode) = create_AST_IF((yyvsp[(3) - (6)].astNode), (yyvsp[(6) - (6)].astNode)); popScope();}
     break;
 
   case 13:
 
 /* Line 1806 of yacc.c  */
-#line 119 "proj1.y"
+#line 119 "proj2.y"
     { (yyval.astNode) = registerVars((yyvsp[(2) - (3)].astNode), TYPE_INTEGER);}
     break;
 
   case 14:
 
 /* Line 1806 of yacc.c  */
-#line 120 "proj1.y"
+#line 120 "proj2.y"
     { (yyval.astNode) = registerVars((yyvsp[(2) - (3)].astNode), TYPE_FLOAT);}
     break;
 
   case 15:
 
 /* Line 1806 of yacc.c  */
-#line 122 "proj1.y"
+#line 122 "proj2.y"
     { (yyval.astNode) = create_AST_VAR_LIST((yyvsp[(1) - (1)].astNode));}
     break;
 
   case 16:
 
 /* Line 1806 of yacc.c  */
-#line 123 "proj1.y"
+#line 123 "proj2.y"
     { (yyval.astNode) = merge_AST_VAR_LIST(create_AST_VAR_LIST((yyvsp[(1) - (3)].astNode)), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 17:
 
 /* Line 1806 of yacc.c  */
-#line 125 "proj1.y"
+#line 125 "proj2.y"
     { (yyval.astNode) = create_AST_WHILE((yyvsp[(4) - (6)].astNode), (yyvsp[(6) - (6)].astNode)); popScope();}
     break;
 
   case 18:
 
 /* Line 1806 of yacc.c  */
-#line 127 "proj1.y"
+#line 127 "proj2.y"
     { (yyval.astNode) = create_AST_ASSIGN((yyvsp[(1) - (4)].astNode), (yyvsp[(3) - (4)].astNode));}
     break;
 
   case 19:
 
 /* Line 1806 of yacc.c  */
-#line 129 "proj1.y"
+#line 129 "proj2.y"
     { (yyval.astNode) = create_AST_UNARY_OP(AST_NOT, (yyvsp[(2) - (2)].astNode));}
     break;
 
   case 20:
 
 /* Line 1806 of yacc.c  */
-#line 130 "proj1.y"
+#line 130 "proj2.y"
     { (yyval.astNode) = (yyvsp[(2) - (3)].astNode);}
     break;
 
   case 21:
 
 /* Line 1806 of yacc.c  */
-#line 131 "proj1.y"
+#line 131 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_NE, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 22:
 
 /* Line 1806 of yacc.c  */
-#line 132 "proj1.y"
+#line 132 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_LT, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 23:
 
 /* Line 1806 of yacc.c  */
-#line 133 "proj1.y"
+#line 133 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_LE, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 24:
 
 /* Line 1806 of yacc.c  */
-#line 134 "proj1.y"
+#line 134 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_GT, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 25:
 
 /* Line 1806 of yacc.c  */
-#line 135 "proj1.y"
+#line 135 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_GE, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 26:
 
 /* Line 1806 of yacc.c  */
-#line 136 "proj1.y"
+#line 136 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_AND, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 27:
 
 /* Line 1806 of yacc.c  */
-#line 137 "proj1.y"
+#line 137 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_OR, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 28:
 
 /* Line 1806 of yacc.c  */
-#line 138 "proj1.y"
+#line 138 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_EQ, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 29:
 
 /* Line 1806 of yacc.c  */
-#line 139 "proj1.y"
+#line 139 "proj2.y"
     { (yyval.astNode) = (yyvsp[(1) - (1)].astNode);}
     break;
 
   case 30:
 
 /* Line 1806 of yacc.c  */
-#line 141 "proj1.y"
+#line 141 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_PLUS, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 31:
 
 /* Line 1806 of yacc.c  */
-#line 142 "proj1.y"
+#line 142 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_MINUS, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 32:
 
 /* Line 1806 of yacc.c  */
-#line 143 "proj1.y"
+#line 143 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_MULT, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 33:
 
 /* Line 1806 of yacc.c  */
-#line 144 "proj1.y"
+#line 144 "proj2.y"
     { (yyval.astNode) = create_AST_BIN_OP(AST_DIV, (yyvsp[(1) - (3)].astNode), (yyvsp[(3) - (3)].astNode));}
     break;
 
   case 34:
 
 /* Line 1806 of yacc.c  */
-#line 145 "proj1.y"
+#line 145 "proj2.y"
     { (yyval.astNode) = (yyvsp[(2) - (3)].astNode);}
     break;
 
   case 35:
 
 /* Line 1806 of yacc.c  */
-#line 146 "proj1.y"
+#line 146 "proj2.y"
     { (yyval.astNode) = create_AST_UNARY_OP(AST_NEG, (yyvsp[(2) - (2)].astNode));}
     break;
 
   case 36:
 
 /* Line 1806 of yacc.c  */
-#line 147 "proj1.y"
+#line 147 "proj2.y"
     { (yyval.astNode) = (yyvsp[(2) - (2)].astNode);}
     break;
 
   case 37:
 
 /* Line 1806 of yacc.c  */
-#line 148 "proj1.y"
+#line 148 "proj2.y"
     { (yyval.astNode) = create_AST_LITERAL_INT((yyvsp[(1) - (1)].ival));}
     break;
 
   case 38:
 
 /* Line 1806 of yacc.c  */
-#line 149 "proj1.y"
+#line 149 "proj2.y"
     { (yyval.astNode) = create_AST_LITERAL_FLOAT((yyvsp[(1) - (1)].fval));}
     break;
 
   case 39:
 
 /* Line 1806 of yacc.c  */
-#line 150 "proj1.y"
+#line 150 "proj2.y"
     { (yyval.astNode) = (yyvsp[(1) - (1)].astNode);}
     break;
 
   case 40:
 
 /* Line 1806 of yacc.c  */
-#line 152 "proj1.y"
+#line 152 "proj2.y"
     {(yyval.astNode) = create_AST_VAR_REF((yyvsp[(1) - (1)].sval), NULL);}
     break;
 
   case 41:
 
 /* Line 1806 of yacc.c  */
-#line 153 "proj1.y"
+#line 153 "proj2.y"
     {(yyval.astNode) = create_AST_VAR_REF((yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].astNode));}
     break;
 
   case 42:
 
 /* Line 1806 of yacc.c  */
-#line 155 "proj1.y"
+#line 155 "proj2.y"
     { (yyval.astNode) = create_AST_ARRAY_INDICES(create_AST_LITERAL_INT((yyvsp[(2) - (3)].ival)));}
     break;
 
   case 43:
 
 /* Line 1806 of yacc.c  */
-#line 156 "proj1.y"
+#line 156 "proj2.y"
     { (yyval.astNode) = create_AST_ARRAY_INDICES(create_AST_VAR_REF((yyvsp[(2) - (3)].sval), NULL));}
     break;
 
   case 44:
 
 /* Line 1806 of yacc.c  */
-#line 157 "proj1.y"
+#line 157 "proj2.y"
     { (yyval.astNode) = create_AST_ARRAY_INDICES((yyvsp[(2) - (3)].astNode));}
     break;
 
   case 45:
 
 /* Line 1806 of yacc.c  */
-#line 158 "proj1.y"
+#line 158 "proj2.y"
     { (yyval.astNode) = merge_AST_ARRAY_INDICES(create_AST_ARRAY_INDICES(create_AST_LITERAL_INT((yyvsp[(2) - (4)].ival))), (yyvsp[(4) - (4)].astNode));}
     break;
 
   case 46:
 
 /* Line 1806 of yacc.c  */
-#line 159 "proj1.y"
+#line 159 "proj2.y"
     { (yyval.astNode) = merge_AST_ARRAY_INDICES(create_AST_ARRAY_INDICES(create_AST_VAR_REF((yyvsp[(2) - (4)].sval), NULL)), (yyvsp[(4) - (4)].astNode));}
     break;
 
   case 47:
 
 /* Line 1806 of yacc.c  */
-#line 160 "proj1.y"
+#line 160 "proj2.y"
     { (yyval.astNode) = merge_AST_ARRAY_INDICES(create_AST_ARRAY_INDICES((yyvsp[(2) - (4)].astNode)), (yyvsp[(4) - (4)].astNode));}
     break;
 
   case 48:
 
 /* Line 1806 of yacc.c  */
-#line 162 "proj1.y"
+#line 162 "proj2.y"
     {pushScope();}
     break;
 
   case 49:
 
 /* Line 1806 of yacc.c  */
-#line 163 "proj1.y"
+#line 163 "proj2.y"
     {popScope();}
     break;
 
 
 
 /* Line 1806 of yacc.c  */
-#line 1896 "proj1.tab.c"
+#line 1896 "proj2.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2123,7 +2123,7 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 164 "proj1.y"
+#line 164 "proj2.y"
 
     #include "./lex.yy.c"
 
@@ -2208,7 +2208,6 @@ NameTypePair* registerVar(char* name, VARTYPE vartype, int maxPointerDepth){
 }
 
 NameTypePair* lookupVar(char* name){
-    printf("Lookup: %s\n", name);
     lookupVarRecursive(varTable, name);
 }
 

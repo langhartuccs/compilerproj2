@@ -245,7 +245,6 @@ NameTypePair* registerVar(char* name, VARTYPE vartype, int maxPointerDepth){
 }
 
 NameTypePair* lookupVar(char* name){
-    printf("Lookup: %s\n", name);
     lookupVarRecursive(varTable, name);
 }
 

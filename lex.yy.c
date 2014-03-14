@@ -522,8 +522,8 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "proj1.l"
-#line 7 "proj1.l"
+#line 1 "proj2.l"
+#line 7 "proj2.l"
   /* put C declarations here*/
 /*  enum {COMMENT,IF,ELSE,WHILE,INT,FLOAT,NE,LE,GE,LT,GT,EQ,ASSIGN,SEMICOLON,LPAREN,RPAREN,LBRACE,RBRACE,LBRACKET,RBRACKET,PLUS,MINUS,MULT,DIV,NOT,COMMA,AND,OR,ID,ICONST,FCONST}; */
 #line 530 "lex.yy.c"
@@ -713,7 +713,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 11 "proj1.l"
+#line 11 "proj2.l"
 
 #line 719 "lex.yy.c"
 
@@ -811,168 +811,168 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 12 "proj1.l"
+#line 12 "proj2.l"
 { yylval.sval = strdup(yytext); return COMMENT; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 13 "proj1.l"
+#line 13 "proj2.l"
 { return IF; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 14 "proj1.l"
+#line 14 "proj2.l"
 { return ELSE; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 15 "proj1.l"
+#line 15 "proj2.l"
 { return WHILE; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 16 "proj1.l"
+#line 16 "proj2.l"
 { return INT; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 17 "proj1.l"
+#line 17 "proj2.l"
 { return FLOAT; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 18 "proj1.l"
+#line 18 "proj2.l"
 { return NE; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 19 "proj1.l"
+#line 19 "proj2.l"
 { return LE; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 20 "proj1.l"
+#line 20 "proj2.l"
 { return GE; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 21 "proj1.l"
+#line 21 "proj2.l"
 { return LT; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 22 "proj1.l"
+#line 22 "proj2.l"
 { return GT; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 23 "proj1.l"
+#line 23 "proj2.l"
 { return EQ; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 24 "proj1.l"
+#line 24 "proj2.l"
 { return ASSIGN; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 25 "proj1.l"
+#line 25 "proj2.l"
 { return SEMICOLON; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 26 "proj1.l"
+#line 26 "proj2.l"
 { return LPAREN; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 27 "proj1.l"
+#line 27 "proj2.l"
 { return RPAREN; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 28 "proj1.l"
+#line 28 "proj2.l"
 { return LBRACE; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 29 "proj1.l"
+#line 29 "proj2.l"
 { return RBRACE; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 30 "proj1.l"
+#line 30 "proj2.l"
 { return LBRACKET; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 31 "proj1.l"
+#line 31 "proj2.l"
 { return RBRACKET; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 32 "proj1.l"
+#line 32 "proj2.l"
 { return PLUS; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 33 "proj1.l"
+#line 33 "proj2.l"
 { return MINUS; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 34 "proj1.l"
+#line 34 "proj2.l"
 { return MULT; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 35 "proj1.l"
+#line 35 "proj2.l"
 { return DIV; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 36 "proj1.l"
+#line 36 "proj2.l"
 { return NOT; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 37 "proj1.l"
+#line 37 "proj2.l"
 { return COMMA; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 38 "proj1.l"
+#line 38 "proj2.l"
 { return AND; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 39 "proj1.l"
+#line 39 "proj2.l"
 { return OR; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 40 "proj1.l"
+#line 40 "proj2.l"
 { yylval.sval = strdup(yytext); return ID; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 41 "proj1.l"
+#line 41 "proj2.l"
 { yylval.fval = strtof(yytext, NULL); return FCONST; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 42 "proj1.l"
+#line 42 "proj2.l"
 { yylval.ival = atoi(yytext); return ICONST; }
 	YY_BREAK
 case 32:
 /* rule 32 can match eol */
 YY_RULE_SETUP
-#line 43 "proj1.l"
+#line 43 "proj2.l"
 /*ignores whitespace*/
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 44 "proj1.l"
+#line 44 "proj2.l"
 ECHO;
 	YY_BREAK
 #line 979 "lex.yy.c"
@@ -1985,4 +1985,4 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 44 "proj1.l"
+#line 44 "proj2.l"
