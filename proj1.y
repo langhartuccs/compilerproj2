@@ -103,8 +103,8 @@ void printASTNode(ASTnode*, int);
 %%
 start:stmt { $$ = create_AST_PROGRAM($1); rootNode = $$;}
     |stmt start { $$ = merge_AST_PROGRAMS(create_AST_PROGRAM($1), $2); rootNode = $$;}
-    |LBRACE start RBRACE { $$ = $2; rootNode = $$;}
-    |LBRACE start RBRACE start { $$ = merge_AST_PROGRAMS($2, $4); rootNode = $$;}
+    |LBRACE pushscope start popscope RBRACE { $$ = $3; rootNode = $$;}
+    |LBRACE pushscope start popscope RBRACE pushscope start popscope{ $$ = merge_AST_PROGRAMS($3, $7); rootNode = $$;}
     ;
 stmt:  ifstmt { verifyVarsAreDeclared($1); $$ = $1;} 
     |vardecl { verifyVarsAreDeclared($1); $$ = $1;}
@@ -112,8 +112,8 @@ stmt:  ifstmt { verifyVarsAreDeclared($1); $$ = $1;}
     | exprstmt { verifyVarsAreDeclared($1); $$ = $1;}
     |COMMENT {$$ = create_AST_COMMENT($1);}
     ;
-ifstmt:  IF pushscope LPAREN boolean RPAREN start ELSE start { $$ = create_AST_IFELSE($4, $6, $8); popScope();}
-    |  IF pushscope LPAREN boolean RPAREN start { $$ = create_AST_IF($4, $6); popScope();}
+ifstmt:  IF LPAREN boolean RPAREN pushscope start popscope ELSE pushscope start { $$ = create_AST_IFELSE($3, $6, $10); popScope();}
+    |  IF LPAREN boolean RPAREN pushscope start { $$ = create_AST_IF($3, $6); popScope();}
     ;
 vardecl:INT var SEMICOLON { $$ = registerVars($2, TYPE_INTEGER);}
     |FLOAT var SEMICOLON { $$ = registerVars($2, TYPE_FLOAT);}
@@ -166,7 +166,6 @@ popscope:  {popScope();};
 
 
 void initialize(){
-    printf("Initializing global variables\n");
     rootNode = NULL;
     varTable = newVarTable();
 }
@@ -245,6 +244,7 @@ NameTypePair* registerVar(char* name, VARTYPE vartype, int maxPointerDepth){
 }
 
 NameTypePair* lookupVar(char* name){
+    printf("Lookup: %s\n", name);
     lookupVarRecursive(varTable, name);
 }
 
@@ -299,7 +299,7 @@ void verifyVarsAreDeclared(ASTnode* node){
             if(node->varPair == NULL){
                 node->parseError = "ERROR: variable not declared!";
             }
-            if(node->pointerDepth > node->varPair->maxPointerDepth){
+            if(node->pointerDepth < 0){
                 node->parseError = "ERROR: accessed dimensions exceed declared dimensions!";
             }
         break;
@@ -367,7 +367,7 @@ ASTnode* create_AST_ARRAY_INDICES(ASTnode* idNode){
     output->nodeType = AST_ARRAY_INDICES;
     addASTnodeChildren(output, (ASTnode*[]){idNode}, 1);
     if(idNode->varType != TYPE_INTEGER){
-        output->parseError = strdup("Array indices must evaluate to integers");
+        idNode->parseError = strdup("Error: Array indices must evaluate to integers");
     }
     return output;
 }
