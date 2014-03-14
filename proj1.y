@@ -172,14 +172,12 @@ void initialize(){
 }
 
 void pushScope(){
-    printf("Pushing scope\n");
     VARtable* newTable = newVarTable();
     newTable->parent = varTable;
     varTable = newTable;
 }
 
 void popScope(){
-    printf("Popping scope\n");
     VARtable* tmp = varTable;
     varTable = varTable->parent;
     destroyVarTable(tmp);
@@ -340,11 +338,13 @@ ASTnode* create_AST_VAR_REF(char* var, ASTnode* arrayIndices){
     NameTypePair* pair = lookupVar(var);
     output->varPair = pair;
     output->varName = var;
-    if(pair != NULL)
-        output->varType = pair->vartype;
     if(arrayIndices != NULL){
         output = merge_AST_ARRAY_INDICES(output, arrayIndices);
         output->pointerDepth = arrayIndices->numChildren;
+    }
+    if(pair != NULL){
+        output->varType = pair->vartype;
+        output->pointerDepth = pair->maxPointerDepth - output->pointerDepth;
     }
     return output;
 }
@@ -451,7 +451,8 @@ void printAST(){
     printASTNode(rootNode, 0);
 }
 
-void getTypeStr(VARTYPE varType, char* output){
+void getTypeStr(VARTYPE varType, char* output, int pointerDepth){
+    int i;
     switch(varType){
         case TYPE_INTEGER:
             strcpy(output, "Int");
@@ -464,6 +465,10 @@ void getTypeStr(VARTYPE varType, char* output){
         break;
         default:
             strcpy(output, "??");
+    }
+
+    for(i = 0; i < pointerDepth; i++){
+        strcat(output, "*");
     }
 }
 
@@ -546,7 +551,7 @@ void printASTNode(ASTnode* node, int tabDepth){
                 printf("%sAST_VAR_DECL ", tabs);
                 break;
         case (AST_VAR_REF):
-                getTypeStr(node->varType, typeStr);
+                getTypeStr(node->varType, typeStr, node->pointerDepth);
                 printf("%sAST_VAR_REF (\"%s\":%s) ", tabs, node->varName, typeStr);
                 break;
         case (AST_VAR_LIST):
