@@ -13,7 +13,8 @@
 %type <astNode> expr idstmt array vardecl var boolean exprstmt whilestmt start ifstmt stmt
 
 %{
- /* put your c declarations here */
+
+ /* Alex Langhart */
 #define YYDEBUG 1
 
 typedef enum {AST_PROGRAM, AST_WHILE, AST_ASSIGN, 
